@@ -1,3 +1,6 @@
+# Copyright 2014: Raytheon BBN Technologies
+# Original authors: Blake Johnson and Marcus da Silva
+
 module Cliffords
 
 import Base: kron, length

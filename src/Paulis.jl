@@ -1,6 +1,8 @@
 import Base: convert, show, kron, abs, length, hash
 export Id, X, Y, Z
 
+# Paulis's are represented by a vector of numbers (0-3) corresponding to
+# single-qubit Paulis, along with a phase parameter.
 immutable Pauli
     v::Vector{Uint8} # 0 = I, 1 = X, 2 = Z, 3 = Y
     s::Uint8 # 0 = +1, 1 = +i, 2 = -1, 3 = -i (im^s)
@@ -71,6 +73,7 @@ end
 
 function generators(a::Pauli)
     G = Pauli[]
+    all(a.v .== 0) && return abs(a)
     s = phase(a)
     for (idx, p) in enumerate(a.v)
         if p == 0 # I, skip it
