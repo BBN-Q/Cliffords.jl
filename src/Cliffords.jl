@@ -20,7 +20,7 @@ length(c::Clifford) = length(first(keys(c.T)))
 ==(a::Clifford, b::Clifford) = (a.T == b.T) && (a.Tinv == b.Tinv)
 
 # TODO
-# function Clifford(label::String, U::Matrix)
+# function Clifford(U::Matrix)
 
 # end
 

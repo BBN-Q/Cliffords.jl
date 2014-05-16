@@ -34,19 +34,18 @@ end
 function levicivita(a::Uint8, b::Uint8)
     # an unusual Levi-Civita pseudo-tensor for the (1,2,3) = (X,Z,Y) convention
     if (a,b) == (1,3) || (a,b) == (3,2) || (a,b) == (2,1)
-        1
+        0x01
     elseif (a,b) == (1,2) || (a,b) == (2,3) || (a,b) == (3,1)
-        3
+        0x03
     else
-        0
+        0x00
     end
 end
+levicivita(x::(Uint8,Uint8)) = levicivita(x...)
+levicivita(a::Vector{Uint8}, b::Vector{Uint8}) = mapreduce(levicivita, +, zip(a,b))
 
-function levicivita(a::Vector{Uint8}, b::Vector{Uint8})
-    lc = sum(map(levicivita, a, b))
-    mod(lc, 4)
-end
-
+# with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the 
+# XOR of the bits
 *(a::Pauli, b::Pauli) = Pauli(a.v $ b.v, a.s + b.s + levicivita(a.v, b.v))
 
 function *(n::Number, p::Pauli)
