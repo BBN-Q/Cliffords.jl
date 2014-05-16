@@ -5,7 +5,7 @@ module Cliffords
 
 import Base: kron, length
 export Clifford, SelfInverseClifford, expand,
-	RI, RX, RY, RZ, H, S, CNOT
+	RI, RX, RY, RZ, H, S, CNOT, SWAP
 
 include("Paulis.jl")
 
@@ -28,6 +28,7 @@ const RI = SelfInverseClifford([Z => Z, X => X])
 const H = SelfInverseClifford([Z => X, X => Z])
 const S = Clifford([Z => Z, X => Y], [Z => Z, X => -Y])
 const CNOT = SelfInverseClifford([ZI => ZI, XI => XX, IZ => ZZ, IX => IX])
+const SWAP = SelfInverseClifford([ZI => IZ, XI => IX, IZ => ZI, IX => XI])
 const RX = SelfInverseClifford([Z => -Z, X => X])
 const RY = SelfInverseClifford([Z => -Z, X => -X])
 const RZ = SelfInverseClifford([Z => Z, X => -X])
@@ -45,9 +46,9 @@ function *(a::Clifford, b::Clifford)
 end
 
 function *(c::Clifford, p::Pauli)
-    if isid(p)
-        return p
-    else
+	if isid(p)
+		return p
+	end
 	# rewrite p in terms of generators (X and Z)
 	G = generators(p)
 	r = paulieye(length(p))
@@ -55,20 +56,18 @@ function *(c::Clifford, p::Pauli)
 		r *= phase(g) * c.T[abs(g)]
 	end
 	return r
-    end
 end
 
 function \(c::Clifford, p::Pauli)
-    if isid(p)
-        return p
-    else
+	if isid(p)
+		return p
+	end
 	G = generators(p)
 	r = paulieye(length(p))
 	for g in G
 		r *= phase(g) * c.Tinv[abs(g)]
 	end
 	return r
-    end
 end
 
 function expand(c::Clifford, subIndices, n)

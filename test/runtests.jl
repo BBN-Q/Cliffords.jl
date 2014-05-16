@@ -64,7 +64,7 @@ II = kron(Id,Id)
 
 # 3 CNOTs is a SWAP
 CNOT21 = expand(CNOT, [2,1], 2)
-@test CNOT * CNOT21 * CNOT == SelfInverseClifford([+IZ=>+ZI,+ZI=>+IZ,+XI=>+IX,+IX=>+XI])
+@test CNOT * CNOT21 * CNOT == SWAP
 
 # inverse circuits...
 
