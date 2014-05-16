@@ -62,5 +62,9 @@ II = kron(Id,Id)
 @test RY * RX * RY == SelfInverseClifford([+X=>+X,+Z=>-Z])
 @test kron(RI, H) * CNOT * kron(RI, H) == SelfInverseClifford([+IZ=>+IZ,+ZI=>+ZI,+XI=>+XZ,+IX=>+ZX])
 
+# 3 CNOTs is a SWAP
+CNOT21 = expand(CNOT, [2,1], 2)
+@test CNOT * CNOT21 * CNOT == SelfInverseClifford([+IZ=>+ZI,+ZI=>+IZ,+XI=>+IX,+IX=>+XI])
+
 # inverse circuits...
 
