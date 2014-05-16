@@ -21,6 +21,7 @@ Pauli(v::Integer, s = 0) = Pauli([v], s)
 ==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
 isequal(a::Pauli, b::Pauli) = hash(a) == hash(b)
 hash(a::Pauli) = hash(convert(String, a))
+isid(a::Pauli) = isempty(nonzeros(a.v))
 
 function convert(::Type{String}, p::Pauli)
     phases = ["+","i","-","-i"]

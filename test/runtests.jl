@@ -40,10 +40,17 @@ IIZ = kron(Id,Id,Z)
 @test generators(kron(X,Y,Z)) == [im*XII, IXI, IZI, IIZ]
 
 # Cliffords * Paulis
-# @test H * Id == Id # failing
+@test H * Id == Id
 @test H * X == Z
 @test H * Z == X
 @test H * Y == -Y
+
+II = kron(Id,Id)
+
+@test kron(RI, H) * II == II
+@test kron(RI, H) * IX == IZ
+@test kron(RI, H) * IZ == IX
+@test kron(RI, H) * IY == -IY
 
 @test CNOT * IX == IX
 @test CNOT * XI == XX

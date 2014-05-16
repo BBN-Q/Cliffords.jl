@@ -45,6 +45,9 @@ function *(a::Clifford, b::Clifford)
 end
 
 function *(c::Clifford, p::Pauli)
+    if isid(p)
+        return p
+    else
 	# rewrite p in terms of generators (X and Z)
 	G = generators(p)
 	r = paulieye(length(p))
@@ -52,15 +55,20 @@ function *(c::Clifford, p::Pauli)
 		r *= phase(g) * c.T[abs(g)]
 	end
 	return r
+    end
 end
 
 function \(c::Clifford, p::Pauli)
+    if isid(p)
+        return p
+    else
 	G = generators(p)
 	r = paulieye(length(p))
 	for g in G
 		r *= phase(g) * c.Tinv[abs(g)]
 	end
 	return r
+    end
 end
 
 function expand(c::Clifford, subIndices, n)
