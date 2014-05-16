@@ -1,4 +1,4 @@
-import Base: convert, show, kron, abs, length, hash
+import Base: convert, show, kron, abs, length, hash, isequal
 export Id, X, Y, Z
 
 # Paulis's are represented by a vector of numbers (0-3) corresponding to
@@ -19,6 +19,7 @@ Pauli(v::Vector, s = 0) = Pauli(uint8(v), uint8(s))
 Pauli(v::Integer, s = 0) = Pauli([v], s)
 
 ==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
+isequal(a::Pauli, b::Pauli) = hash(a) == hash(b)
 hash(a::Pauli) = hash(convert(String, a))
 
 function convert(::Type{String}, p::Pauli)
