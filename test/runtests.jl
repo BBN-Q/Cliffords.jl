@@ -52,9 +52,28 @@ II = kron(Id,Id)
 @test kron(RI, H) * IZ == IX
 @test kron(RI, H) * IY == -IY
 
+@test CNOT * II == II
 @test CNOT * IX == IX
 @test CNOT * XI == XX
 @test CNOT * YY == -XZ
+
+# Cliffords \ Paulis
+@test H \ Id == Id
+@test H \ X == Z
+@test H \ Z == X
+@test H \ Y == -Y
+
+II = kron(Id,Id)
+
+@test kron(RI, H) \ II == II
+@test kron(RI, H) \ IX == IZ
+@test kron(RI, H) \ IZ == IX
+@test kron(RI, H) \ IY == -IY
+
+@test CNOT \ II == II
+@test CNOT \ IX == IX
+@test CNOT \ XI == XX
+@test CNOT \ YY == -XZ
 
 # Cliffords * Cliffords
 
@@ -66,5 +85,8 @@ II = kron(Id,Id)
 CNOT21 = expand(CNOT, [2,1], 2)
 @test CNOT * CNOT21 * CNOT == SWAP
 
-# inverse circuits...
+# Cliffords \ Cliffords
+@test H \ H == H * H
+@test CNOT \ CNOT == CNOT * CNOT
+@test RY * RX * RY == RY \ (RX * RY)
 
