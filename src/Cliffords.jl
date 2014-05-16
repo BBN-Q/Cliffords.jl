@@ -46,6 +46,18 @@ function *(a::Clifford, b::Clifford)
 	Clifford(T, Tinv)
 end
 
+function \(a::Clifford, b::Clifford)
+	T = (Pauli=>Pauli)[]
+	for p = keys(b.T)
+		T[p] = a \ (b * p)
+	end
+	Tinv = (Pauli=>Pauli)[]
+	for p = keys(a.Tinv)
+		Tinv[p] = b \ (a * p)
+	end
+	Clifford(T, Tinv)
+end
+
 function *(c::Clifford, p::Pauli)
 	if isid(p)
 		return p
