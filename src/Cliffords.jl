@@ -5,7 +5,7 @@ module Cliffords
 
 import Base: kron, length
 export Clifford, SelfInverseClifford, expand,
-	RI, RX, RY, RZ, H, S, CNOT, SWAP
+	RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP
 
 include("Paulis.jl")
 
@@ -28,6 +28,7 @@ const RI = SelfInverseClifford([Z => Z, X => X])
 const H = SelfInverseClifford([Z => X, X => Z])
 const S = Clifford([Z => Z, X => Y], [Z => Z, X => -Y])
 const CNOT = SelfInverseClifford([ZI => ZI, XI => XX, IZ => ZZ, IX => IX])
+const CZ   = SelfInverseClifford([ZI => ZI, XI => XZ, IZ => IZ, IX => ZX])
 const SWAP = SelfInverseClifford([ZI => IZ, XI => IX, IZ => ZI, IX => XI])
 const RX = SelfInverseClifford([Z => -Z, X => X])
 const RY = SelfInverseClifford([Z => -Z, X => -X])
