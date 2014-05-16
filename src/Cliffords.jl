@@ -4,8 +4,10 @@
 module Cliffords
 
 import Base: kron, length
+import Iterators: product
+
 export Clifford, SelfInverseClifford, expand,
-	RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP
+	RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, allpaulis
 
 include("Paulis.jl")
 
@@ -19,10 +21,31 @@ length(c::Clifford) = length(first(keys(c.T)))
 
 ==(a::Clifford, b::Clifford) = (a.T == b.T) && (a.Tinv == b.Tinv)
 
-# TODO
-# function Clifford(U::Matrix)
+function convert(::Type{Clifford},U::Matrix)
+	local T, t, n, ri
 
-# end
+	T = (Pauli=>Pauli)[]
+	Tinv = (Pauli=>Pauli)[]
+	t = typeof(complex(U))
+	n = int(log(2,size(U,1)))
+	ri = cliffordeye(n)
+	for p in keys(ri.T)
+		T[p] = convert(Pauli, U * convert(t, p) * U')
+		Tinv[p] = convert(Pauli, U' * convert(t, p) * U)
+	end
+	Clifford(T, Tinv)
+end
+
+Clifford(U::Matrix) = convert(Clifford,U)
+
+function convert{T}(::Type{Matrix{T}},c::Clifford)
+	d = 4^length(c)
+	m = zeros(T,d,d)
+	for p in allpaulis(length(c))
+		m += vec(convert(Matrix{T},c*p))*vec(convert(Matrix{T},p))'/sqrt(d)
+	end
+	m
+end
 
 const RI = SelfInverseClifford([Z => Z, X => X])
 const H = SelfInverseClifford([Z => X, X => Z])
@@ -106,5 +129,7 @@ function kron(a::Clifford, b::Clifford)
 	n = length(a) + length(b)
 	expand(a, [1:length(a)], n) * expand(b, [length(a)+1:n], n)
 end
+
+cliffordeye(n) = expand(RI, [1], n)
 
 end

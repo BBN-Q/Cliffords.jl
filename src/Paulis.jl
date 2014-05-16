@@ -29,6 +29,22 @@ function convert(::Type{String}, p::Pauli)
     phases[p.s+1] * join([paulis[i+1] for i in p.v])
 end
 
+function convert{T}(::Type{Matrix{Complex{T}}}, p::Pauli)
+    function mats(i::Uint8)
+        if i==0x00
+            return eye(Complex{T},2)
+        elseif i==0x01
+            return Complex{T}[0 1; 1 0]
+        elseif i==0x02
+            return Complex{T}[1 0; 0 -1]
+        elseif i==0x03
+            return Complex{T}[0 -im; im 0]
+        end
+    end
+
+    return phase(p)*reduce(kron,map(mats,p.v))
+end
+
 function show(io::IO, p::Pauli)
     print(io,convert(String,p))
 end
@@ -55,6 +71,7 @@ function *(n::Number, p::Pauli)
     @assert(ns >= 0, "Multiplication only supported for +/- 1, +/- im")
     Pauli(p.v, p.s + ns)
 end
+
 *(p::Pauli, n::Number) = n * p
 +(p::Pauli) = p
 -(p::Pauli) = Pauli(p.v, p.s + 2)
@@ -104,5 +121,33 @@ const Z = Pauli(2)
 # 2-qubit Paulis
 labelOpPairs = [("I", Id), ("X", X), ("Y", Y), ("Z", Z)]
 for (a, ao) in labelOpPairs, (b, bo) in labelOpPairs
-    @eval const $(symbol(a*b)) = kron($ao, $bo)
+	@eval const $(symbol(a*b)) = kron($ao, $bo)
+end
+
+function allpaulis(n)
+	if n <= 0
+		error("Need at least 1 qubit")
+	elseif n==1
+		return [Id,X,Y,Z]
+	else
+		return map(x->kron(x[1],x[2]),product([Id,X,Y,Z],allpaulis(n-1)))
+	end
+end
+
+function convert(::Type{Pauli}, m::Matrix)
+	d = size(m,1)
+	n = log(2,size(m,1))
+	for p in allpaulis(n)
+		overlap = trace(m*convert(typeof(complex(m)),p)) / d
+		if isapprox(abs(overlap),1,atol=d*eps(Float64))
+			return (round(real(overlap))+im*round(imag(overlap)))*p
+		elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
+			println(m, overlap,isapprox(abs(overlap),0))
+			error("Trying to convert non-Pauli matrix to a Pauli object")
+		end
+	end
+end
+
+function Pauli(m::Matrix)
+	convert(Pauli, m)
 end
