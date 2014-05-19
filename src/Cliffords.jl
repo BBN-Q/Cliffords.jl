@@ -28,8 +28,8 @@ function convert(::Type{Clifford},U::Matrix)
 	n = int(log(2,size(U,1)))
 	ri = cliffordeye(n)
 	for p in keys(ri.T)
-		T[p] = U * convert(t, p) * U'
-		Tinv[p] = U' * convert(t, p) * U
+		T[p] = U * p * U'
+		Tinv[p] = U' * p * U
 	end
 	Clifford(T, Tinv)
 end

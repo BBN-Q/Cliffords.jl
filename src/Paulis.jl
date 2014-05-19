@@ -62,7 +62,8 @@ function convert(::Type{Pauli}, m::Matrix)
     end
 end
 
-promote_rule{T}(::Type{Pauli}, ::Type{Matrix{T}}) = Matrix{T}
+promote_rule{T<:Real}(::Type{Pauli}, ::Type{Matrix{T}}) = Matrix{Complex{T}}
+promote_rule{T<:Complex}(::Type{Pauli}, ::Type{Matrix{T}}) = Matrix{T}
 
 function levicivita(a::Uint8, b::Uint8)
     # an unusual Levi-Civita pseudo-tensor for the (1,2,3) = (X,Z,Y) convention
@@ -86,8 +87,10 @@ function *(n::Number, p::Pauli)
     @assert(ns >= 0, "Multiplication only supported for +/- 1, +/- im")
     Pauli(p.v, p.s + ns)
 end
-
 *(p::Pauli, n::Number) = n * p
+*{T}(p::Pauli, u::Matrix{T}) = *(promote(p, u)...)
+*{T}(u::Matrix{T}, p::Pauli) = *(promote(u, p)...)
+
 +(p::Pauli) = p
 -(p::Pauli) = Pauli(p.v, p.s + 2)
 abs(p::Pauli) = Pauli(p.v, 0)
