@@ -20,7 +20,8 @@ SelfInverseClifford(T) = Clifford(T, T)
 length(c::Clifford) = length(first(keys(c.T)))
 
 ==(a::Clifford, b::Clifford) = (a.T == b.T)
-hash(c::Clifford) = hash(string(keys(c.T)..., values(c.T)...))
+isequal(a::Clifford, b::Clifford) = (a == b) # for backward compatibility with Julia 0.2
+hash(c::Clifford, h::Uint) = hash(c.T, h)
 
 function convert(::Type{Clifford},U::Matrix)
 	T = (Pauli=>Pauli)[]

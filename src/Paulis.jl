@@ -17,8 +17,8 @@ Pauli(m::Matrix) = convert(Pauli, m)
 show(io::IO, p::Pauli) = print(io,convert(String,p))
 
 ==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
-isequal(a::Pauli, b::Pauli) = hash(a) == hash(b)
-hash(a::Pauli) = hash(convert(String, a))
+isequal(a::Pauli, b::Pauli) = (a == b)
+hash(a::Pauli, h::Uint) = hash(convert(String, a), h)
 isid(a::Pauli) = isempty(nonzeros(a.v))
 
 function convert(::Type{String}, p::Pauli)

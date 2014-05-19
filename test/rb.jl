@@ -1,3 +1,4 @@
+using Cliffords, Base.Test
 # randomized benchmarking
 
 include("../src/C1.jl")
