@@ -22,16 +22,14 @@ length(c::Clifford) = length(first(keys(c.T)))
 ==(a::Clifford, b::Clifford) = (a.T == b.T) && (a.Tinv == b.Tinv)
 
 function convert(::Type{Clifford},U::Matrix)
-	local T, t, n, ri
-
 	T = (Pauli=>Pauli)[]
 	Tinv = (Pauli=>Pauli)[]
 	t = typeof(complex(U))
 	n = int(log(2,size(U,1)))
 	ri = cliffordeye(n)
 	for p in keys(ri.T)
-		T[p] = convert(Pauli, U * convert(t, p) * U')
-		Tinv[p] = convert(Pauli, U' * convert(t, p) * U)
+		T[p] = U * convert(t, p) * U'
+		Tinv[p] = U' * convert(t, p) * U
 	end
 	Clifford(T, Tinv)
 end
@@ -42,7 +40,7 @@ function convert{T}(::Type{Matrix{T}},c::Clifford)
 	d = 4^length(c)
 	m = zeros(T,d,d)
 	for p in allpaulis(length(c))
-		m += vec(convert(Matrix{T},c*p))*vec(convert(Matrix{T},p))'/sqrt(d)
+		m += vec(c*p)*vec(p)'/sqrt(d)
 	end
 	m
 end

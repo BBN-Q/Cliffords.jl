@@ -40,12 +40,12 @@ IIZ = kron(Id,Id,Z)
 @test generators(kron(Z,Z,Z)) == [ZII, IZI, IIZ]
 @test generators(kron(X,Y,Z)) == [im*XII, IXI, IZI, IIZ]
 
-@test Cliffords.Pauli([1 0; 0 1]) == Id
-@test Cliffords.Pauli([0 1; 1 0]) == X
-@test Cliffords.Pauli([0 -im; im 0]) == Y
-@test Cliffords.Pauli([1 0; 0 -1]) == Z
+@test Pauli([1 0; 0 1]) == Id
+@test Pauli([0 1; 1 0]) == X
+@test Pauli([0 -im; im 0]) == Y
+@test Pauli([1 0; 0 -1]) == Z
 
-@test convert(Matrix{Complex{Int}},Cliffords.Pauli(eye(4))) == eye(4)
+@test convert(Matrix{Complex{Int}},Pauli(eye(4))) == eye(4)
 
 # Cliffords
 

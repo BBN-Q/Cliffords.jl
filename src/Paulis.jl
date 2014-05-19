@@ -1,5 +1,5 @@
-import Base: convert, show, kron, abs, length, hash, isequal
-export Id, X, Y, Z
+import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule
+export Pauli, Id, X, Y, Z
 
 # Paulis's are represented by a vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.
@@ -17,6 +17,9 @@ end
 
 Pauli(v::Vector, s = 0) = Pauli(uint8(v), uint8(s))
 Pauli(v::Integer, s = 0) = Pauli([v], s)
+Pauli(m::Matrix) = convert(Pauli, m)
+
+show(io::IO, p::Pauli) = print(io,convert(String,p))
 
 ==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
 isequal(a::Pauli, b::Pauli) = hash(a) == hash(b)
@@ -45,9 +48,21 @@ function convert{T}(::Type{Matrix{Complex{T}}}, p::Pauli)
     return phase(p)*reduce(kron,map(mats,p.v))
 end
 
-function show(io::IO, p::Pauli)
-    print(io,convert(String,p))
+function convert(::Type{Pauli}, m::Matrix)
+    d = size(m,1)
+    n = log(2,size(m,1))
+    for p in allpaulis(n)
+        overlap = trace(m*convert(typeof(complex(m)),p)) / d
+        if isapprox(abs(overlap),1,atol=d*eps(Float64))
+            return (round(real(overlap))+im*round(imag(overlap)))*p
+        elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
+            println(m, overlap,isapprox(abs(overlap),0))
+            error("Trying to convert non-Pauli matrix to a Pauli object")
+        end
+    end
 end
+
+promote_rule{T}(::Type{Pauli}, ::Type{Matrix{T}}) = Matrix{T}
 
 function levicivita(a::Uint8, b::Uint8)
     # an unusual Levi-Civita pseudo-tensor for the (1,2,3) = (X,Z,Y) convention
@@ -78,6 +93,7 @@ end
 abs(p::Pauli) = Pauli(p.v, 0)
 phase(p::Pauli) = im^p.s
 length(p::Pauli) = length(p.v)
+vec(p::Pauli) = vec(convert(Matrix{Complex{Int}}, p))
 
 kron(a::Pauli, b::Pauli) = Pauli([a.v, b.v], a.s + b.s)
 
@@ -132,22 +148,4 @@ function allpaulis(n)
 	else
 		return map(x->kron(x[1],x[2]),product([Id,X,Y,Z],allpaulis(n-1)))
 	end
-end
-
-function convert(::Type{Pauli}, m::Matrix)
-	d = size(m,1)
-	n = log(2,size(m,1))
-	for p in allpaulis(n)
-		overlap = trace(m*convert(typeof(complex(m)),p)) / d
-		if isapprox(abs(overlap),1,atol=d*eps(Float64))
-			return (round(real(overlap))+im*round(imag(overlap)))*p
-		elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
-			println(m, overlap,isapprox(abs(overlap),0))
-			error("Trying to convert non-Pauli matrix to a Pauli object")
-		end
-	end
-end
-
-function Pauli(m::Matrix)
-	convert(Pauli, m)
 end
