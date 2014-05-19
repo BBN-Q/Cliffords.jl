@@ -6,11 +6,7 @@ immutable Pauli
     v::Vector{Uint8} # 0 = I, 1 = X, 2 = Z, 3 = Y
     s::Uint8 # 0 = +1, 1 = +i, 2 = -1, 3 = -i (im^s)
     function Pauli(v::Vector{Uint8}, s::Uint8)
-        if any(v .> 3)
-            error("Invalid Pauli operator.")
-        else
-            new(v,mod(s,4))
-        end
+        new(v,mod(s,4))
     end
 end
 

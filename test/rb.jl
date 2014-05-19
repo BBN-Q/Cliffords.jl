@@ -1,5 +1,8 @@
 # randomized benchmarking
 
+include("../src/C1.jl")
+include("../src/C2.jl")
+
 C2, C2dict = fullC2()
 
 function rb_seq(n)
