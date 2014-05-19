@@ -45,7 +45,7 @@ IIZ = kron(Id,Id,Z)
 @test Pauli([0 -im; im 0]) == Y
 @test Pauli([1 0; 0 -1]) == Z
 
-@test convert(Matrix{Complex{Int}},Pauli(eye(4))) == eye(4)
+@test convert(Matrix{Complex{Int}},paulieye(2)) == eye(4)
 
 # Cliffords
 

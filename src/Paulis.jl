@@ -1,5 +1,4 @@
-import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule
-export Pauli, Id, X, Y, Z
+export Pauli, Id, X, Y, Z, allpaulis, paulieye
 
 # Paulis's are represented by a vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.

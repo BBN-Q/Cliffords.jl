@@ -3,11 +3,11 @@
 
 module Cliffords
 
-import Base: kron, length
+import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule, zero, inv
 import Iterators: product
 
 export Clifford, SelfInverseClifford, expand,
-	RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, allpaulis
+	RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
 
 include("Paulis.jl")
 
@@ -19,7 +19,8 @@ end
 SelfInverseClifford(T) = Clifford(T, T)
 length(c::Clifford) = length(first(keys(c.T)))
 
-==(a::Clifford, b::Clifford) = (a.T == b.T) && (a.Tinv == b.Tinv)
+==(a::Clifford, b::Clifford) = (a.T == b.T)
+hash(c::Clifford) = hash(reduce(*, keys(c.T)) * reduce(*, values(c.T)))
 
 function convert(::Type{Clifford},U::Matrix)
 	T = (Pauli=>Pauli)[]
@@ -104,6 +105,8 @@ function \(c::Clifford, p::Pauli)
 	return r
 end
 
+inv(c::Clifford) = Clifford(c.Tinv, c.T)
+
 function expand(c::Clifford, subIndices, n)
 	T = (Pauli=>Pauli)[]
 	for (k,v) in c.T
@@ -128,6 +131,7 @@ function kron(a::Clifford, b::Clifford)
 	expand(a, [1:length(a)], n) * expand(b, [length(a)+1:n], n)
 end
 
+zero(::Type{Clifford}) = RI
 cliffordeye(n) = expand(RI, [1], n)
 
 end
