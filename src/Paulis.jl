@@ -77,8 +77,10 @@ levicivita(a::Vector{Uint8}, b::Vector{Uint8}) = mapreduce(levicivita, +, zip(a,
 # XOR of the bits
 *(a::Pauli, b::Pauli) = Pauli(a.v $ b.v, a.s + b.s + levicivita(a.v, b.v))
 
+const phases_ = [1, im, -1, -im]
+
 function *(n::Number, p::Pauli)
-    ns = findfirst(n .== [1, im, -1, -im]) - 1
+    ns = findfirst(n .== phases_) - 1
     @assert(ns >= 0, "Multiplication only supported for +/- 1, +/- im")
     Pauli(p.v, p.s + ns)
 end
@@ -88,8 +90,10 @@ end
 
 +(p::Pauli) = p
 -(p::Pauli) = Pauli(p.v, p.s + 2)
+
 abs(p::Pauli) = Pauli(p.v, 0)
-phase(p::Pauli) = im^p.s
+phase(p::Pauli) = phases_[p.s+1]
+
 length(p::Pauli) = length(p.v)
 vec(p::Pauli) = vec(convert(Matrix{Complex{Int}}, p))
 
