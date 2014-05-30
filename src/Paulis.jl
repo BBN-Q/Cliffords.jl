@@ -19,7 +19,7 @@ show(io::IO, p::Pauli) = print(io,convert(String,p))
 ==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
 isequal(a::Pauli, b::Pauli) = (a == b)
 hash(a::Pauli, h::Uint) = hash(a.v, hash(a.s, h))
-isid(a::Pauli) = isempty(nonzeros(a.v))
+isid(a::Pauli) = isempty(find(a.v))
 
 function convert(::Type{String}, p::Pauli)
     phases = ["+","i","-","-i"]
