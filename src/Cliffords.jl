@@ -24,8 +24,8 @@ isequal(a::Clifford, b::Clifford) = (a == b) # for backward compatibility with J
 hash(c::Clifford, h::Uint) = hash(c.T, h)
 
 function convert(::Type{Clifford},U::Matrix)
-	T = (Pauli=>Pauli)[]
-	Tinv = (Pauli=>Pauli)[]
+	T = Dict{Pauli,Pauli}()
+	Tinv = Dict{Pauli,Pauli}()
 	t = typeof(complex(U))
 	n = int(log(2,size(U,1)))
 	ri = cliffordeye(n)
@@ -58,11 +58,11 @@ const RY = SelfInverseClifford([Z => -Z, X => -X])
 const RZ = SelfInverseClifford([Z => Z, X => -X])
 
 function *(a::Clifford, b::Clifford)
-	T = (Pauli=>Pauli)[]
+	T = Dict{Pauli,Pauli}()
 	for p = keys(b.T)
 		T[p] = a * (b * p)
 	end
-	Tinv = (Pauli=>Pauli)[]
+	Tinv = Dict{Pauli,Pauli}()
 	for p = keys(a.Tinv)
 		Tinv[p] = b \ (a \ p)
 	end
@@ -70,11 +70,11 @@ function *(a::Clifford, b::Clifford)
 end
 
 function \(a::Clifford, b::Clifford)
-	T = (Pauli=>Pauli)[]
+	T = Dict{Pauli,Pauli}()
 	for p = keys(b.T)
 		T[p] = a \ (b * p)
 	end
-	Tinv = (Pauli=>Pauli)[]
+	Tinv = Dict{Pauli,Pauli}()
 	for p = keys(a.Tinv)
 		Tinv[p] = b \ (a * p)
 	end
@@ -109,7 +109,7 @@ end
 inv(c::Clifford) = Clifford(c.Tinv, c.T)
 
 function expand(c::Clifford, subIndices, n)
-	T = (Pauli=>Pauli)[]
+	T = Dict{Pauli,Pauli}()
 	for (k,v) in c.T
 		T[expand(k, subIndices, n)] = expand(v, subIndices, n)
 	end
