@@ -9,6 +9,8 @@ import Iterators: product
 export Clifford, SelfInverseClifford, expand,
 	RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
 
+using Compat
+
 include("Paulis.jl")
 
 immutable Clifford
@@ -47,15 +49,15 @@ function convert{T}(::Type{Matrix{T}},c::Clifford)
 	m
 end
 
-const RI = SelfInverseClifford([Z => Z, X => X])
-const H = SelfInverseClifford([Z => X, X => Z])
-const S = Clifford([Z => Z, X => Y], [Z => Z, X => -Y])
-const CNOT = SelfInverseClifford([ZI => ZI, XI => XX, IZ => ZZ, IX => IX])
-const CZ   = SelfInverseClifford([ZI => ZI, XI => XZ, IZ => IZ, IX => ZX])
-const SWAP = SelfInverseClifford([ZI => IZ, XI => IX, IZ => ZI, IX => XI])
-const RX = SelfInverseClifford([Z => -Z, X => X])
-const RY = SelfInverseClifford([Z => -Z, X => -X])
-const RZ = SelfInverseClifford([Z => Z, X => -X])
+const RI = SelfInverseClifford(@compat Dict(Z => Z, X => X))
+const H = SelfInverseClifford(@compat Dict(Z => X, X => Z))
+const S = Clifford(@compat(Dict(Z => Z, X => Y)), @compat Dict(Z => Z, X => -Y))
+const CNOT = SelfInverseClifford(@compat Dict(ZI => ZI, XI => XX, IZ => ZZ, IX => IX))
+const CZ   = SelfInverseClifford(@compat Dict(ZI => ZI, XI => XZ, IZ => IZ, IX => ZX))
+const SWAP = SelfInverseClifford(@compat Dict(ZI => IZ, XI => IX, IZ => ZI, IX => XI))
+const RX = SelfInverseClifford(@compat Dict(Z => -Z, X => X))
+const RY = SelfInverseClifford(@compat Dict(Z => -Z, X => -X))
+const RZ = SelfInverseClifford(@compat Dict(Z => Z, X => -X))
 
 function *(a::Clifford, b::Clifford)
 	T = Dict{Pauli,Pauli}()
@@ -113,7 +115,7 @@ function expand(c::Clifford, subIndices, n)
 	for (k,v) in c.T
 		T[expand(k, subIndices, n)] = expand(v, subIndices, n)
 	end
-	Tinv = (Pauli=>Pauli)[]
+	Tinv = Dict{Pauli, Pauli}()
 	for (k,v) in c.Tinv
 		Tinv[expand(k, subIndices, n)] = expand(v, subIndices, n)
 	end
@@ -129,7 +131,7 @@ end
 
 function kron(a::Clifford, b::Clifford)
 	n = length(a) + length(b)
-	expand(a, [1:length(a)], n) * expand(b, [length(a)+1:n], n)
+	expand(a, [1:length(a);], n) * expand(b, [length(a)+1:n;], n)
 end
 
 zero(::Type{Clifford}) = RI

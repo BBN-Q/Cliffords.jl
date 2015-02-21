@@ -1,4 +1,5 @@
 using Cliffords, Base.Test
+using Compat
 
 import Cliffords: IZ, ZI, XI, IX, YI, IY, XX, YY, ZZ, XY, XZ, YX, ZX,
 	generators
@@ -94,10 +95,10 @@ II = kron(Id,Id)
 
 # Cliffords * Cliffords
 
-@test H * S * H == Clifford([+X=>+X,+Z=>-Y],[+X=>+X,+Z=>+Y])
+@test H * S * H == Clifford(@compat(Dict(+X=>+X,+Z=>-Y)),@compat Dict(+X=>+X,+Z=>+Y))
 @test H * S * H == Clifford(expm(-im*pi/4*[0 1; 1 0]))
-@test RY * RX * RY == SelfInverseClifford([+X=>+X,+Z=>-Z])
-@test kron(RI, H) * CNOT * kron(RI, H) == SelfInverseClifford([+IZ=>+IZ,+ZI=>+ZI,+XI=>+XZ,+IX=>+ZX])
+@test RY * RX * RY == SelfInverseClifford(@compat Dict(+X=>+X,+Z=>-Z))
+@test kron(RI, H) * CNOT * kron(RI, H) == SelfInverseClifford(@compat Dict(+IZ=>+IZ,+ZI=>+ZI,+XI=>+XZ,+IX=>+ZX))
 @test kron(RI, H) * CNOT * kron(RI, H) == CZ
 @test S * S == RZ
 

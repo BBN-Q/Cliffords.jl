@@ -97,7 +97,7 @@ phase(p::Pauli) = phases_[p.s+1]
 length(p::Pauli) = length(p.v)
 vec(p::Pauli) = vec(convert(Matrix{Complex{Int}}, p))
 
-kron(a::Pauli, b::Pauli) = Pauli([a.v, b.v], a.s + b.s)
+kron(a::Pauli, b::Pauli) = Pauli([a.v; b.v], a.s + b.s)
 
 function expand(a::Pauli, subIndices, n)
     v = zeros(n)
