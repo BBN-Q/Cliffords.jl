@@ -28,19 +28,13 @@ function convert(::Type{String}, p::Pauli)
 end
 
 function convert{T}(::Type{Matrix{Complex{T}}}, p::Pauli)
-    function mats(i::Uint8)
-        if i==0x00
-            return eye(Complex{T},2)
-        elseif i==0x01
-            return Complex{T}[0 1; 1 0]
-        elseif i==0x02
-            return Complex{T}[1 0; 0 -1]
-        elseif i==0x03
-            return Complex{T}[0 -im; im 0]
-        end
-    end
+    const mats = @compat Dict(
+        0x00 => eye(Complex{T},2),
+        0x01 => Complex{T}[0 1; 1 0],
+        0x02 => Complex{T}[1 0; 0 -1],
+        0x03 => Complex{T}[0 -im; im 0])
 
-    return phase(p)*reduce(kron,map(mats,p.v))
+    return phase(p)*reduce(kron,[mats[x] for x in p.v])
 end
 
 function convert(::Type{Pauli}, m::Matrix)
