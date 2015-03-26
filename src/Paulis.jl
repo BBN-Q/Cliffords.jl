@@ -3,22 +3,22 @@ export Pauli, Id, X, Y, Z, allpaulis, paulieye
 # Paulis's are represented by a vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.
 immutable Pauli
-    v::Vector{Uint8} # 0 = I, 1 = X, 2 = Z, 3 = Y
-    s::Uint8 # 0 = +1, 1 = +i, 2 = -1, 3 = -i (im^s)
-    function Pauli(v::Vector{Uint8}, s::Uint8)
+    v::Vector{UInt8} # 0 = I, 1 = X, 2 = Z, 3 = Y
+    s::UInt8 # 0 = +1, 1 = +i, 2 = -1, 3 = -i (im^s)
+    function Pauli(v::Vector{UInt8}, s::UInt8)
         new(v,mod(s,4))
     end
 end
 
-Pauli(v::Vector, s = 0) = Pauli(uint8(v), uint8(s))
-Pauli(v::Integer, s = 0) = Pauli([v], s)
+Pauli(v::Vector, s = 0) = Pauli(trunc(UInt8, v), s % UInt8)
+Pauli(v::Integer, s = 0) = Pauli([v % UInt8], s)
 Pauli(m::Matrix) = convert(Pauli, m)
 
 show(io::IO, p::Pauli) = print(io,convert(String,p))
 
 ==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
 isequal(a::Pauli, b::Pauli) = (a == b)
-hash(a::Pauli, h::Uint) = hash(a.v, hash(a.s, h))
+hash(a::Pauli, h::UInt) = hash(a.v, hash(a.s, h))
 isid(a::Pauli) = isempty(find(a.v))
 
 function convert(::Type{String}, p::Pauli)
@@ -54,7 +54,7 @@ end
 promote_rule{T<:Real}(::Type{Pauli}, ::Type{Matrix{T}}) = Matrix{Complex{T}}
 promote_rule{T<:Complex}(::Type{Pauli}, ::Type{Matrix{T}}) = Matrix{T}
 
-function levicivita(a::Uint8, b::Uint8)
+function levicivita(a::UInt8, b::UInt8)
     # an unusual Levi-Civita pseudo-tensor for the (1,2,3) = (X,Z,Y) convention
     if (a,b) == (1,3) || (a,b) == (3,2) || (a,b) == (2,1)
         0x01
@@ -64,8 +64,8 @@ function levicivita(a::Uint8, b::Uint8)
         0x00
     end
 end
-levicivita(x::(Uint8,Uint8)) = levicivita(x...)
-levicivita(a::Vector{Uint8}, b::Vector{Uint8}) = mapreduce(levicivita, +, zip(a,b))
+levicivita(x::(UInt8,UInt8)) = levicivita(x...)
+levicivita(a::Vector{UInt8}, b::Vector{UInt8}) = mapreduce(levicivita, +, zip(a,b))
 
 # with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the 
 # XOR of the bits
