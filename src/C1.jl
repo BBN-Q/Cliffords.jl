@@ -1,5 +1,9 @@
 # single qubit Cliffords
 
+export localclifford
+
+localclifford(i) = C1[i]
+
 const pX = [0 1; 1 0]
 const pY = [0 -im; im 0]
 const pZ = [1 0; 0 -1]
