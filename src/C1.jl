@@ -2,8 +2,6 @@
 
 export localclifford
 
-localclifford(i) = C1[i]
-
 const pX = [0 1; 1 0]
 const pY = [0 -im; im 0]
 const pZ = [1 0; 0 -1]
@@ -41,3 +39,5 @@ C1[21] = expm(-1im*pi/3/sqrt(3) * (pX+pY-pZ))
 C1[22] = expm(-2im*pi/3/sqrt(3) * (pX+pY-pZ))
 C1[23] = expm(-1im*pi/3/sqrt(3) * (-pX+pY+pZ))
 C1[24] = expm(-2im*pi/3/sqrt(3) * (-pX+pY+pZ))
+
+localclifford(i) = C1[i]

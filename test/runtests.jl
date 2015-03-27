@@ -116,3 +116,7 @@ iSWAP = CZ*kron(S,S)*SWAP
 @test RY * RX * RY == RY \ (RX * RY)
 @test S \ S == RI
 @test S \ RZ == S
+
+# Local Cliffords
+@test localclifford(1) == RI
+

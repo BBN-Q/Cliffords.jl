@@ -137,4 +137,6 @@ end
 zero(::Type{Clifford}) = RI
 cliffordeye(n) = expand(RI, [1], n)
 
+include("C1.jl")
+
 end
