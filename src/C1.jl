@@ -40,4 +40,8 @@ C1[22] = expm(-2im*pi/3/sqrt(3) * (pX+pY-pZ))
 C1[23] = expm(-1im*pi/3/sqrt(3) * (-pX+pY+pZ))
 C1[24] = expm(-2im*pi/3/sqrt(3) * (-pX+pY+pZ))
 
-localclifford(i) = C1[i]
+localclifford(i::Int) = C1[i]
+
+function localclifford(v::Vector)
+  kron(map(x->C1[x], v)...)
+end

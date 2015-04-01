@@ -120,3 +120,13 @@ iSWAP = CZ*kron(S,S)*SWAP
 # Local Cliffords
 @test localclifford(1) == RI
 
+# Weight
+for i=1:20
+  v = rand(10)
+  vX = int(v .> .25) .* int(v .< .5)
+  vY = 2*int(v .> .5) .* int(v .< .75)
+  vZ = 3*int(v .> .75)
+  r = rand()
+  rS = int(r > .25) + int(r > .5) + int(r > .75)
+  @test weight(Pauli(vX + vY + vZ,rS)) == sum(int(v .> .25))
+end

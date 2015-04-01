@@ -1,4 +1,4 @@
-export Pauli, Id, X, Y, Z, allpaulis, paulieye
+export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight
 
 # Paulis's are represented by a vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.
@@ -13,6 +13,8 @@ end
 Pauli(v::Vector, s = 0) = Pauli(trunc(UInt8, v), s % UInt8)
 Pauli(v::Integer, s = 0) = Pauli([v % UInt8], s)
 Pauli(m::Matrix) = convert(Pauli, m)
+
+weight(p::Pauli) = sum(int( p.v .> 0 ))
 
 show(io::IO, p::Pauli) = print(io,convert(String,p))
 
