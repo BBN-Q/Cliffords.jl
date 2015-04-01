@@ -29,7 +29,7 @@ function convert(::Type{Clifford},U::Matrix)
 	T = Dict{Pauli,Pauli}()
 	Tinv = Dict{Pauli,Pauli}()
 	t = typeof(complex(U))
-	n = Int(log(2,size(U,1)))
+	n = round(Int, log(2,size(U,1)))
 	ri = cliffordeye(n)
 	for p in keys(ri.T)
 		T[p] = U * p * U'

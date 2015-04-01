@@ -10,8 +10,8 @@ immutable Pauli
     end
 end
 
-Pauli(v::Vector, s = 0) = Pauli(trunc(UInt8, v), s % UInt8)
-Pauli(v::Integer, s = 0) = Pauli([v % UInt8], s)
+Pauli(v::Vector, s = 0) = Pauli(convert(Vector{UInt8}, v), convert(UInt8, s))
+Pauli(v::Integer, s = 0) = Pauli([v], s)
 Pauli(m::Matrix) = convert(Pauli, m)
 
 weight(p::Pauli) = sum(int( p.v .> 0 ))
