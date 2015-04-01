@@ -14,7 +14,7 @@ Pauli(v::Vector, s = 0) = Pauli(convert(Vector{UInt8}, v), convert(UInt8, s))
 Pauli(v::Integer, s = 0) = Pauli([v], s)
 Pauli(m::Matrix) = convert(Pauli, m)
 
-weight(p::Pauli) = sum(int( p.v .> 0 ))
+weight(p::Pauli) = sum( p.v .> 0 )
 
 show(io::IO, p::Pauli) = print(io,convert(String,p))
 
