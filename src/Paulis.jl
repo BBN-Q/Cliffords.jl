@@ -1,4 +1,6 @@
-export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight
+import Base.complex
+
+export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex
 
 # Paulis's are represented by a vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.
@@ -38,6 +40,8 @@ function convert{T}(::Type{Matrix{Complex{T}}}, p::Pauli)
 
     return phase(p)*reduce(kron,[mats[x] for x in p.v])
 end
+
+complex(p::Pauli) = convert(Matrix{Complex128},p)
 
 function convert(::Type{Pauli}, m::Matrix)
     d = size(m,1)

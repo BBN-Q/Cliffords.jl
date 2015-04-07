@@ -130,3 +130,9 @@ for i=1:20
   rS = (r > .25) + (r > .5) + (r > .75)
   @test weight(Pauli(vX + vY + vZ,rS)) == sum(v .> .25)
 end
+
+# 
+@test_approx_eq norm(complex(X)-[0 1; 1 0]) 0 
+@test_approx_eq norm(complex(Y)-[0 -1im;1im 0]) 0
+@test_approx_eq norm(complex(Z)-[1 0; 0 -1]) 0
+
