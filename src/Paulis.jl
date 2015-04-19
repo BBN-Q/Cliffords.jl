@@ -70,7 +70,7 @@ function levicivita(a::UInt8, b::UInt8)
         0x00
     end
 end
-levicivita(x::(UInt8,UInt8)) = levicivita(x...)
+levicivita(x::@compat Tuple{UInt8,UInt8}) = levicivita(x...)
 levicivita(a::Vector{UInt8}, b::Vector{UInt8}) = mapreduce(levicivita, +, zip(a,b))
 
 # with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the 
