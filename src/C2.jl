@@ -4,7 +4,7 @@ import Iterators: product
 
 function fullC2()
 	C2 = Clifford[]
-	C2dict = (Clifford => Int)[]
+	C2dict = @compat Dict{Clifford, Int}()
 	iSWAP = CZ*kron(S,S)*SWAP
 
 	ct = 1

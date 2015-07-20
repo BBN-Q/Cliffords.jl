@@ -6,7 +6,7 @@ const pX = [0 1; 1 0]
 const pY = [0 -im; im 0]
 const pZ = [1 0; 0 -1]
 
-C1 = zeros(Clifford, 24)
+const C1 = zeros(Clifford, 24)
 
 # identity
 C1[1]  = RI
@@ -41,7 +41,4 @@ C1[23] = expm(-1im*pi/3/sqrt(3) * (-pX+pY+pZ))
 C1[24] = expm(-2im*pi/3/sqrt(3) * (-pX+pY+pZ))
 
 localclifford(i::Int) = C1[i]
-
-function localclifford(v::Vector)
-  kron(map(x->C1[x], v)...)
-end
+localclifford(v::Vector) = kron(C1[v]...)
