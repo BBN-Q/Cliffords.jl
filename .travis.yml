@@ -1,7 +1,4 @@
 language: julia
-os:
-  - linux
-  - osx
 julia:
   - release
   - nightly
@@ -11,3 +8,6 @@ notifications:
 #script:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 #  - julia --check-bounds=yes -e 'Pkg.clone(pwd()); Pkg.build("Cliffords"); Pkg.test("Cliffords"; coverage=true)'
+
+# necessary to run on new container-based infrastructure
+sudo: false
