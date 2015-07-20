@@ -3,7 +3,7 @@
 
 module Cliffords
 
-import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule, zero, inv
+import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule, zero, inv, expand
 import Iterators: product
 
 export Clifford, SelfInverseClifford, expand,
