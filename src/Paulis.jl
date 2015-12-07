@@ -18,14 +18,14 @@ Pauli(m::Matrix) = convert(Pauli, m)
 
 weight(p::Pauli) = sum( p.v .> 0 )
 
-show(io::IO, p::Pauli) = print(io,convert(String,p))
+show(io::IO, p::Pauli) = print(io,convert(UTF8String,p))
 
 ==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
 isequal(a::Pauli, b::Pauli) = (a == b)
 hash(a::Pauli, h::UInt) = hash(a.v, hash(a.s, h))
 isid(a::Pauli) = isempty(find(a.v))
 
-function convert(::Type{String}, p::Pauli)
+function convert(::Type{UTF8String}, p::Pauli)
     phases = ["+","i","-","-i"]
     paulis = "IXZY"
     phases[p.s+1] * join([paulis[i+1] for i in p.v])

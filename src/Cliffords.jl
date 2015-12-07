@@ -23,7 +23,7 @@ length(c::Clifford) = length(first(keys(c.T)))
 
 ==(a::Clifford, b::Clifford) = (a.T == b.T)
 isequal(a::Clifford, b::Clifford) = (a == b) # for backward compatibility with Julia 0.2
-hash(c::Clifford, h::Uint) = hash(c.T, h)
+hash(c::Clifford, h::UInt) = hash(c.T, h)
 
 function convert(::Type{Clifford},U::Matrix)
 	T = Dict{Pauli,Pauli}()
