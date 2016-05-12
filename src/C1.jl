@@ -6,7 +6,7 @@ const pX = [0 1; 1 0]
 const pY = [0 -im; im 0]
 const pZ = [1 0; 0 -1]
 
-const C1 = zeros(Clifford, 24)
+C1 = Dict{UInt,Clifford}()
 
 # identity
 C1[1]  = RI
@@ -40,5 +40,13 @@ C1[22] = expm(-2im*pi/3/sqrt(3) * (pX+pY-pZ))
 C1[23] = expm(-1im*pi/3/sqrt(3) * (-pX+pY+pZ))
 C1[24] = expm(-2im*pi/3/sqrt(3) * (-pX+pY+pZ))
 
+rC1 = Dict{Clifford,UInt}()
+
+for (k,v) in C1
+    rC1[v] = k
+end
+
 localclifford(i::Int) = C1[i]
 localclifford(v::Vector) = kron(C1[v]...)
+
+localcliffordindex(c::Clifford) = rC1[c]
