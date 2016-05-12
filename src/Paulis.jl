@@ -139,15 +139,15 @@ const Z = Pauli(2)
 # 2-qubit Paulis
 labelOpPairs = [("I", Id), ("X", X), ("Y", Y), ("Z", Z)]
 for (a, ao) in labelOpPairs, (b, bo) in labelOpPairs
-	@eval const $(symbol(a*b)) = kron($ao, $bo)
+    @eval const $(symbol(a*b)) = kron($ao, $bo)
 end
 
 function allpaulis(n)
-	if n <= 0
-		error("Need at least 1 qubit")
-	elseif n==1
-		return [Id,X,Y,Z]
-	else
-		return map(x->kron(x[1],x[2]),product([Id,X,Y,Z],allpaulis(n-1)))
-	end
+    if n <= 0
+        error("Need at least 1 qubit")
+    elseif n==1
+        return [Id,X,Y,Z]
+    else
+        return map(x->kron(x[1],x[2]),product([Id,X,Y,Z],allpaulis(n-1)))
+    end
 end

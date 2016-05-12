@@ -7,15 +7,15 @@ import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule,
 import Iterators: product
 
 export Clifford, SelfInverseClifford, expand,
-	RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
+       RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
 
 using Compat
 
 include("Paulis.jl")
 
 immutable Clifford
-	T::Dict{Pauli, Pauli}
-	Tinv::Dict{Pauli, Pauli}
+    T::Dict{Pauli, Pauli}
+    Tinv::Dict{Pauli, Pauli}
 end
 
 SelfInverseClifford(T) = Clifford(T, T)
@@ -26,27 +26,27 @@ isequal(a::Clifford, b::Clifford) = (a == b) # for backward compatibility with J
 hash(c::Clifford, h::UInt) = hash(c.T, h)
 
 function convert(::Type{Clifford},U::Matrix)
-	T = Dict{Pauli,Pauli}()
-	Tinv = Dict{Pauli,Pauli}()
-	t = typeof(complex(U))
-	n = round(Int, log(2,size(U,1)))
-	ri = cliffordeye(n)
-	for p in keys(ri.T)
-		T[p] = U * p * U'
-		Tinv[p] = U' * p * U
-	end
-	Clifford(T, Tinv)
+    T = Dict{Pauli,Pauli}()
+    Tinv = Dict{Pauli,Pauli}()
+    t = typeof(complex(U))
+    n = round(Int, log(2,size(U,1)))
+    ri = cliffordeye(n)
+    for p in keys(ri.T)
+        T[p] = U * p * U'
+        Tinv[p] = U' * p * U
+    end
+    Clifford(T, Tinv)
 end
 
 Clifford(U::Matrix) = convert(Clifford,U)
 
 function convert{T}(::Type{Matrix{T}},c::Clifford)
-	d = 4^length(c)
-	m = zeros(T,d,d)
-	for p in allpaulis(length(c))
-		m += vec(c*p)*vec(p)'/sqrt(d)
-	end
-	m
+    d = 4^length(c)
+    m = zeros(T,d,d)
+    for p in allpaulis(length(c))
+        m += vec(c*p)*vec(p)'/sqrt(d)
+    end
+    m
 end
 
 const RI = SelfInverseClifford(@compat Dict(Z => Z, X => X))
@@ -60,78 +60,78 @@ const RY = SelfInverseClifford(@compat Dict(Z => -Z, X => -X))
 const RZ = SelfInverseClifford(@compat Dict(Z => Z, X => -X))
 
 function *(a::Clifford, b::Clifford)
-	T = Dict{Pauli,Pauli}()
-	for p = keys(b.T)
-		T[p] = a * (b * p)
-	end
-	Tinv = Dict{Pauli,Pauli}()
-	for p = keys(a.Tinv)
-		Tinv[p] = b \ (a \ p)
-	end
-	Clifford(T, Tinv)
+    T = Dict{Pauli,Pauli}()
+    for p = keys(b.T)
+        T[p] = a * (b * p)
+    end
+    Tinv = Dict{Pauli,Pauli}()
+    for p = keys(a.Tinv)
+        Tinv[p] = b \ (a \ p)
+    end
+    Clifford(T, Tinv)
 end
 
 function \(a::Clifford, b::Clifford)
-	T = Dict{Pauli,Pauli}()
-	for p = keys(b.T)
-		T[p] = a \ (b * p)
-	end
-	Tinv = Dict{Pauli,Pauli}()
-	for p = keys(a.Tinv)
-		Tinv[p] = b \ (a * p)
-	end
-	Clifford(T, Tinv)
+    T = Dict{Pauli,Pauli}()
+    for p = keys(b.T)
+        T[p] = a \ (b * p)
+    end
+    Tinv = Dict{Pauli,Pauli}()
+    for p = keys(a.Tinv)
+        Tinv[p] = b \ (a * p)
+    end
+    Clifford(T, Tinv)
 end
 
 function *(c::Clifford, p::Pauli)
-	if isid(p)
-		return p
-	end
-	# rewrite p in terms of generators (X and Z)
-	G = generators(p)
-	r = paulieye(length(p))
-	for g in G
-		r *= phase(g) * c.T[abs(g)]
-	end
-	return r
+    if isid(p)
+        return p
+    end
+    # rewrite p in terms of generators (X and Z)
+    G = generators(p)
+    r = paulieye(length(p))
+    for g in G
+        r *= phase(g) * c.T[abs(g)]
+    end
+    return r
 end
 
 function \(c::Clifford, p::Pauli)
-	if isid(p)
-		return p
-	end
-	G = generators(p)
-	r = paulieye(length(p))
-	for g in G
-		r *= phase(g) * c.Tinv[abs(g)]
-	end
-	return r
+    if isid(p)
+        return p
+    end
+    G = generators(p)
+    r = paulieye(length(p))
+    for g in G
+        r *= phase(g) * c.Tinv[abs(g)]
+    end
+    return r
 end
 
 inv(c::Clifford) = Clifford(c.Tinv, c.T)
 
 function expand(c::Clifford, subIndices, n)
-	T = Dict{Pauli,Pauli}()
-	for (k,v) in c.T
-		T[expand(k, subIndices, n)] = expand(v, subIndices, n)
-	end
-	Tinv = Dict{Pauli, Pauli}()
-	for (k,v) in c.Tinv
-		Tinv[expand(k, subIndices, n)] = expand(v, subIndices, n)
-	end
-	# add trivial mapping for missing subspaces
-	for dim in setdiff(1:n, subIndices)
-		T[expand(X, dim, n)] = expand(X, dim, n)
-		T[expand(Z, dim, n)] = expand(Z, dim, n)
-		Tinv[expand(X, dim, n)] = expand(X, dim, n)
-		Tinv[expand(Z, dim, n)] = expand(Z, dim, n)
-	end
-	Clifford(T, Tinv)
+    T = Dict{Pauli,Pauli}()
+    for (k,v) in c.T
+        T[expand(k, subIndices, n)] = expand(v, subIndices, n)
+    end
+    Tinv = Dict{Pauli, Pauli}()
+    for (k,v) in c.Tinv
+        Tinv[expand(k, subIndices, n)] = expand(v, subIndices, n)
+    end
+    # add trivial mapping for missing subspaces
+    for dim in setdiff(1:n, subIndices)
+        T[expand(X, dim, n)] = expand(X, dim, n)
+        T[expand(Z, dim, n)] = expand(Z, dim, n)
+        Tinv[expand(X, dim, n)] = expand(X, dim, n)
+        Tinv[expand(Z, dim, n)] = expand(Z, dim, n)
+    end
+    Clifford(T, Tinv)
 end
 
 function kron(a::Clifford, b::Clifford)
-	n = length(a) + length(b)
-	expand(a, [1:length(a);], n) * expand(b, [length(a)+1:n;], n)
+    n = length(a) + length(b)
+    expand(a, [1:length(a);], n) * expand(b, [length(a)+1:n;], n)
 end
 
 zero(::Type{Clifford}) = RI
