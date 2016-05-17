@@ -6,7 +6,7 @@ const pX = [0 1; 1 0]
 const pY = [0 -im; im 0]
 const pZ = [1 0; 0 -1]
 
-const C1 = zeros(Clifford, 24)
+const C1 = Vector{Clifford{1}}(24)
 
 # identity
 C1[1]  = RI
