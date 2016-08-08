@@ -18,14 +18,14 @@ Pauli(m::Matrix) = convert(Pauli, m)
 
 weight(p::Pauli) = sum( p.v .> 0 )
 
-show(io::IO, p::Pauli) = print(io,convert(UTF8String,p))
+show(io::IO, p::Pauli) = print(io,convert(String,p))
 
 ==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
 isequal(a::Pauli, b::Pauli) = (a == b)
 hash(a::Pauli, h::UInt) = hash(a.v, hash(a.s, h))
 isid(a::Pauli) = isempty(find(a.v))
 
-function convert(::Type{UTF8String}, p::Pauli)
+function convert(::Type{String}, p::Pauli)
     phases = ["+","i","-","-i"]
     paulis = "IXZY"
     phases[p.s+1] * join([paulis[i+1] for i in p.v])
@@ -73,7 +73,7 @@ end
 levicivita(x::@compat Tuple{UInt8,UInt8}) = levicivita(x...)
 levicivita(a::Vector{UInt8}, b::Vector{UInt8}) = mapreduce(levicivita, +, zip(a,b))
 
-# with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the 
+# with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the
 # XOR of the bits
 *(a::Pauli, b::Pauli) = Pauli(a.v $ b.v, a.s + b.s + levicivita(a.v, b.v))
 
@@ -139,7 +139,7 @@ const Z = Pauli(2)
 # 2-qubit Paulis
 labelOpPairs = [("I", Id), ("X", X), ("Y", Y), ("Z", Z)]
 for (a, ao) in labelOpPairs, (b, bo) in labelOpPairs
-    @eval const $(symbol(a*b)) = kron($ao, $bo)
+    @eval const $(Symbol(a*b)) = kron($ao, $bo)
 end
 
 function allpaulis(n)
