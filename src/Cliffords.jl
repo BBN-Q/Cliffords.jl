@@ -1,6 +1,8 @@
 # Copyright 2014: Raytheon BBN Technologies
 # Original authors: Blake Johnson and Marcus da Silva
 
+VERSION >= v"0.4.0-dev+6521" && __precompile__()
+
 module Cliffords
 
 import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule,
