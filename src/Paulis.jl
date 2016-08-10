@@ -25,6 +25,17 @@ isequal(a::Pauli, b::Pauli) = (a == b)
 hash(a::Pauli, h::UInt) = hash(a.v, hash(a.s, h))
 isid(a::Pauli) = isempty(find(a.v))
 
+function isless(a::Pauli, b::Pauli)
+    # canonical total order defined by weight and then "lexicographic":
+    # Id < X < Y < Z
+    pauli_lex = (1, 2, 4, 3)
+    if weight(a) != weight(b)
+        return weight(a) < weight(b)
+    else
+        return pauli_lex[a.v[end]+1] < pauli_lex[b.v[end]+1]
+    end
+end
+
 function convert(::Type{String}, p::Pauli)
     phases = ["+","i","-","-i"]
     paulis = "IXZY"

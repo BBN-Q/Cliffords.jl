@@ -1,7 +1,7 @@
 using Cliffords, Base.Test
 using Compat
 
-import Cliffords: IZ, ZI, XI, IX, YI, IY, XX, YY, ZZ, XY, XZ, YX, ZX,
+import Cliffords: IZ, ZI, XI, IX, YI, IY, II, XX, YY, ZZ, XY, XZ, YX, ZX,
 	generators
 
 # Paulis
@@ -18,6 +18,15 @@ import Cliffords: IZ, ZI, XI, IX, YI, IY, XX, YY, ZZ, XY, XZ, YX, ZX,
 @test Y * Z == im*X
 @test Z * X == im*Y
 @test Y * X == -im*Z
+
+@test Id < X
+@test X < Y
+@test Y < Z
+
+@test II < IX
+@test IX < XX
+@test XI < XX
+@test IX < IY
 
 # generators
 @test generators(X) == [X]
@@ -131,8 +140,7 @@ for i=1:20
   @test weight(Pauli(vX + vY + vZ,rS)) == sum(v .> .25)
 end
 
-# 
-@test_approx_eq norm(complex(X)-[0 1; 1 0]) 0 
+#
+@test_approx_eq norm(complex(X)-[0 1; 1 0]) 0
 @test_approx_eq norm(complex(Y)-[0 -1im;1im 0]) 0
 @test_approx_eq norm(complex(Z)-[1 0; 0 -1]) 0
-

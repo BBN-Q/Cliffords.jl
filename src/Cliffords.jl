@@ -6,7 +6,7 @@ VERSION >= v"0.4.0-dev+6521" && __precompile__()
 module Cliffords
 
 import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule,
-    zero, inv, expand, ==, *, +, -, \
+    zero, inv, expand, ==, *, +, -, \, isless
 import Iterators: product
 
 export Clifford, SelfInverseClifford, expand,
