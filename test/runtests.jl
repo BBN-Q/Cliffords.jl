@@ -27,6 +27,10 @@ import Cliffords: IZ, ZI, XI, IX, YI, IY, II, XX, YY, ZZ, XY, XZ, YX, ZX,
 @test IX < XX
 @test XI < XX
 @test IX < IY
+@test XI < YI
+@test XX < YY
+@test XX < XY
+@test YX > XX
 
 # generators
 @test generators(X) == [X]
