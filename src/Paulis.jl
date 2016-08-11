@@ -37,7 +37,7 @@ end
 
 function lex_tuple(p::Pauli)
     const pauli_lex = (1, 2, 4, 3)
-    tuple((pauli_lex[x+1] for x in p.v)...)
+    tuple([pauli_lex[x+1] for x in p.v]...)
 end
 
 function convert(::Type{String}, p::Pauli)
