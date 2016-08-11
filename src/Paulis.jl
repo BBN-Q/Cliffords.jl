@@ -100,8 +100,8 @@ function *(n::Number, p::Pauli)
     Pauli(p.v, p.s + ns)
 end
 *(p::Pauli, n::Number) = n * p
-*{T}(p::Pauli, u::Matrix{T}) = *(promote(p, u)...)
-*{T}(u::Matrix{T}, p::Pauli) = *(promote(u, p)...)
+*(p::Pauli, u::Matrix) = *(promote(p, u)...)
+*(u::Matrix, p::Pauli) = *(promote(u, p)...)
 
 +(p::Pauli) = p
 -(p::Pauli) = Pauli(p.v, p.s + 2)

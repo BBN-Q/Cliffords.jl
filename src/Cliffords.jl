@@ -6,7 +6,7 @@ VERSION >= v"0.4.0-dev+6521" && __precompile__()
 module Cliffords
 
 import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule,
-    zero, inv, expand, ==, *, +, -, \, isless
+    zero, inv, expand, ==, *, +, -, \, isless, ctranspose
 import Iterators: product
 
 export Clifford, SelfInverseClifford, expand,
@@ -51,6 +51,8 @@ function convert{T}(::Type{Matrix{T}},c::Clifford)
     end
     m
 end
+
+promote_rule{T}(::Type{Clifford}, ::Type{Matrix{T}}) = Matrix{T}
 
 const RI = SelfInverseClifford(@compat Dict(Z => Z, X => X))
 const H = SelfInverseClifford(@compat Dict(Z => X, X => Z))
@@ -111,7 +113,11 @@ function \(c::Clifford, p::Pauli)
     return r
 end
 
+*(c::Clifford, m::Matrix) = *(promote(c,m)...)
+*(m::Matrix, c::Clifford) = *(promote(m,c)...)
+
 inv(c::Clifford) = Clifford(c.Tinv, c.T)
+ctranspose(c::Clifford) = inv(c)
 
 function expand(c::Clifford, subIndices, n)
     T = Dict{Pauli,Pauli}()
