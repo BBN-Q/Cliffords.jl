@@ -43,7 +43,7 @@ end
 
 Clifford(U::Matrix) = convert(Clifford,U)
 
-function convert(::Type{Matrix{Complex128}}, c::Clifford)
+function convert{T}(::Type{Matrix{T}}, c::Clifford)
     d = 2^length(c)
     l = liou(c)
 
@@ -55,7 +55,7 @@ function convert(::Type{Matrix{Complex128}}, c::Clifford)
     # unitary is the reshaped eigenvector corresponding to the non-zero eigenvalue
     v = eigfact(Hermitian(choi), d^2:d^2)[:vectors]
     m = reshape(v, d, d)
-    return m * sqrt(d)
+    return convert(Matrix{T}, m * sqrt(d))
 end
 complex(c::Clifford) = convert(Matrix{Complex128},c)
 
