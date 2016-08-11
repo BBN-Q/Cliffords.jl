@@ -43,9 +43,25 @@ end
 
 Clifford(U::Matrix) = convert(Clifford,U)
 
-function convert{T}(::Type{Matrix{T}},c::Clifford)
+function convert(::Type{Matrix{Complex128}}, c::Clifford)
+    d = 2^length(c)
+    l = liou(c)
+
+    # liou2choi
+    rl = reshape(l, (d, d, d, d) )
+    rl = permutedims(rl, [1,3,2,4])
+    choi = reshape(rl, size(l))
+
+    # unitary is the reshaped eigenvector corresponding to the non-zero eigenvalue
+    v = eigfact(Hermitian(choi), d^2:d^2)[:vectors]
+    m = reshape(v, d, d)
+    return m * sqrt(d)
+end
+complex(c::Clifford) = convert(Matrix{Complex128},c)
+
+function liou(c::Clifford)
     d = 4^length(c)
-    m = zeros(T,d,d)
+    m = zeros(Complex128,d,d)
     for p in allpaulis(length(c))
         m += vec(c*p)*vec(p)'/sqrt(d)
     end
