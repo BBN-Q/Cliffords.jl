@@ -19,14 +19,29 @@ Pauli(m::Matrix) = convert(Pauli, m)
 
 weight{N}(p::Pauli{N}) = sum( p.v .> 0 )
 
-show{N}(io::IO, p::Pauli{N}) = print(io,convert(UTF8String,p))
+show{N}(io::IO, p::Pauli{N}) = print(io,convert(AbstractString,p))
 
 =={N,M}(a::Pauli{N}, b::Pauli{M}) = (a.v == b.v && a.s == b.s)
 isequal{N,M}(a::Pauli{N}, b::Pauli{M}) = (a == b)
 hash{N}(a::Pauli{N}, h::UInt) = hash(a.v, hash(a.s, h))
 isid{N}(a::Pauli{N}) = reduce(&,a.v .== 0)
 
-function convert{N}(::Type{UTF8String}, p::Pauli{N})
+function isless(a::Pauli, b::Pauli)
+    # canonical total order defined by weight and then "lexicographic":
+    # Id < X < Y < Z
+    if weight(a) != weight(b)
+        return weight(a) < weight(b)
+    else
+        return lex_tuple(a) < lex_tuple(b)
+    end
+end
+
+function lex_tuple(p::Pauli)
+    const pauli_lex = (1, 2, 4, 3)
+    tuple([pauli_lex[x+1] for x in p.v]...)
+end
+
+function convert(::Type{AbstractString}, p::Pauli)
     phases = ["+","i","-","-i"]
     paulis = "IXZY"
     phases[p.s+1] * join([paulis[i+1] for i in p.v])
@@ -89,7 +104,7 @@ levicivita(x::@compat Tuple{UInt8,UInt8}) = levicivita(x...)
 levicivita(a::Vector{UInt8}, b::Vector{UInt8}) = mapreduce(levicivita, +, zip(a,b))
 levicivita(a, b) = mapreduce(levicivita, +, zip(a,b))
 
-# with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the 
+# with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the
 # XOR of the bits
 *(a::Pauli, b::Pauli) = Pauli(map($,a.v,b.v), mod(a.s + b.s + levicivita(a.v, b.v),4))
 
@@ -157,7 +172,7 @@ const Z = Pauli(2)
 # 2-qubit Paulis
 labelOpPairs = [("I", Id), ("X", X), ("Y", Y), ("Z", Z)]
 for (a, ao) in labelOpPairs, (b, bo) in labelOpPairs
-	@eval const $(symbol(a*b)) = kron($ao, $bo)
+    @eval const $(Symbol(a*b)) = kron($ao, $bo)
 end
 
 function allpaulis(n)
@@ -166,6 +181,6 @@ function allpaulis(n)
     elseif n==1
         return [Id,X,Y,Z]
     else
-	return map(x->kron(x[1],x[2]),product([Id,X,Y,Z],allpaulis(n-1)))
+        return map(x->kron(x[1],x[2]),product([Id,X,Y,Z],allpaulis(n-1)))
     end
 end
