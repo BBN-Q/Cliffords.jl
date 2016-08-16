@@ -13,13 +13,13 @@ using Compat, FixedSizeArrays
 
 include("Paulis.jl")
 
-immutable Clifford{N}
+type Clifford{N}
     T::Dict{Pauli{N}, Pauli{N}}
     Tinv::Dict{Pauli{N}, Pauli{N}}
 end
 
 SelfInverseClifford(T) = Clifford(T, T)
-length{N}(c::Clifford{N}) = length(first(keys(c.T)))
+length{N}(c::Clifford{N}) = N
 
 =={N}(a::Clifford{N}, b::Clifford{N}) = (a.T == b.T)
 isequal{N}(a::Clifford{N}, b::Clifford{N}) = (a == b) # for backward compatibility with Julia 0.2
@@ -63,24 +63,24 @@ const RX = SelfInverseClifford(@compat Dict(Z => -Z, X => X))
 const RY = SelfInverseClifford(@compat Dict(Z => -Z, X => -X))
 const RZ = SelfInverseClifford(@compat Dict(Z => Z, X => -X))
 
-function *(a::Clifford, b::Clifford)
-    T = Dict{Pauli,Pauli}()
+function *{N}(a::Clifford{N}, b::Clifford{N})
+    T = Dict{Pauli{N},Pauli{N}}()
     for p = keys(b.T)
 	T[p] = a * (b * p)
     end
-    Tinv = Dict{Pauli,Pauli}()
+    Tinv = Dict{Pauli{N},Pauli{N}}()
     for p = keys(a.Tinv)
 	Tinv[p] = b \ (a \ p)
     end
     Clifford(T, Tinv)
 end
 
-function \(a::Clifford, b::Clifford)
-    T = Dict{Pauli,Pauli}()
+function \{N}(a::Clifford{N}, b::Clifford{N})
+    T = Dict{Pauli{N},Pauli{N}}()
     for p = keys(b.T)
 	T[p] = a \ (b * p)
     end
-    Tinv = Dict{Pauli,Pauli}()
+    Tinv = Dict{Pauli{N},Pauli{N}}()
     for p = keys(a.Tinv)
 	Tinv[p] = b \ (a * p)
     end

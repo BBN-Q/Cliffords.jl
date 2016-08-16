@@ -7,13 +7,13 @@ export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex
 immutable Pauli{N}
     v::Vec{N,UInt8} # 0 = I, 1 = X, 2 = Z, 3 = Y
     s::UInt8 # 0 = +1, 1 = +i, 2 = -1, 3 = -i (im^s)
-    # function Pauli{N}(v::Vec{N,UInt8}, s::UInt8)
-    #     new(v,mod(s,4))
-    # end
 end
 
-Pauli{N}(v::Vec{N,UInt8}, s::Integer) = Pauli(v, convert(UInt8,s))
-Pauli(v::Vector, s = 0) = Pauli{length(v)}(Vec{length(v),UInt8}(v), convert(UInt8, s))
+function Pauli{N}(v::Vec{N,UInt8}, s::Integer)
+    @assert 0 <= s <= 3 "The phase of a Pauli must be represented by an interger mod 4"
+    Pauli(v, convert(UInt8,s))
+end
+Pauli(v::Vector, s = 0) = Pauli{length(v)}(Vec{length(v),UInt8}(v), s)
 Pauli(v::Integer, s = 0) = Pauli([v], s)
 Pauli(m::Matrix) = convert(Pauli, m)
 
@@ -24,7 +24,7 @@ show{N}(io::IO, p::Pauli{N}) = print(io,convert(UTF8String,p))
 =={N,M}(a::Pauli{N}, b::Pauli{M}) = (a.v == b.v && a.s == b.s)
 isequal{N,M}(a::Pauli{N}, b::Pauli{M}) = (a == b)
 hash{N}(a::Pauli{N}, h::UInt) = hash(a.v, hash(a.s, h))
-isid{N}(a::Pauli{N}) = isempty(find(a.v))
+isid{N}(a::Pauli{N}) = reduce(&,a.v .== 0)
 
 function convert{N}(::Type{UTF8String}, p::Pauli{N})
     phases = ["+","i","-","-i"]
@@ -52,7 +52,7 @@ function Pauli(m::Matrix)
         if isapprox(abs(overlap),1,atol=d*eps(Float64))
             return (round(real(overlap))+im*round(imag(overlap)))*p
         elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
-            println(m, overlap,isapprox(abs(overlap),0))
+            #println(m, overlap,isapprox(abs(overlap),0))
             error("Trying to convert non-Pauli matrix to a Pauli object")
         end
     end
@@ -66,7 +66,7 @@ function convert{N}(::Type{Pauli{N}}, m::Matrix)
         if isapprox(abs(overlap),1,atol=d*eps(Float64))
             return (round(real(overlap))+im*round(imag(overlap)))*p
         elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
-            println(m, overlap,isapprox(abs(overlap),0))
+            #println(m, overlap,isapprox(abs(overlap),0))
             error("Trying to convert non-Pauli matrix to a Pauli object")
         end
     end
@@ -91,27 +91,27 @@ levicivita(a, b) = mapreduce(levicivita, +, zip(a,b))
 
 # with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the 
 # XOR of the bits
-*(a::Pauli, b::Pauli) = Pauli(map($,a.v,b.v), a.s + b.s + levicivita(a.v, b.v))
+*(a::Pauli, b::Pauli) = Pauli(map($,a.v,b.v), mod(a.s + b.s + levicivita(a.v, b.v),4))
 
 const phases_ = [1, im, -1, -im]
 
-function *{N}(n::Number, p::Pauli{N})
+function *(n::Number, p::Pauli)
     ns = findfirst(n .== phases_) - 1
     @assert(ns >= 0, "Multiplication only supported for +/- 1, +/- im")
-    Pauli(p.v, p.s + ns)
+    Pauli(p.v, mod(p.s + ns,4))
 end
-*{N}(p::Pauli{N}, n::Number) = n * p
-*{T,N}(p::Pauli{N}, u::Matrix{T}) = *(promote(p, u)...)
-*{T,N}(u::Matrix{T}, p::Pauli{N}) = *(promote(u, p)...)
+*(p::Pauli, n::Number) = n * p
+*(p::Pauli, u::Matrix) = *(promote(p, u)...)
+*(u::Matrix, p::Pauli) = *(promote(u, p)...)
 
-+{N}(p::Pauli{N}) = p
--{N}(p::Pauli{N}) = Pauli(p.v, p.s + 0x02)
++(p::Pauli) = p
+-(p::Pauli) = Pauli(p.v, p.s + 0x02)
 
-abs{N}(p::Pauli{N}) = Pauli(p.v, 0)
-phase{N}(p::Pauli{N}) = phases_[p.s+1]
+abs(p::Pauli) = Pauli(p.v, 0)
+phase(p::Pauli) = phases_[p.s+1]
 
-length{N}(p::Pauli{N}) = length(p.v)
-vec{N}(p::Pauli{N}) = vec(convert(Matrix{Complex{Int}}, p))
+length{N}(p::Pauli{N}) = N
+vec(p::Pauli) = vec(convert(Matrix{Complex{Int}}, p))
 
 kron{N,M}(a::Pauli{N}, b::Pauli{M}) = Pauli{N+M}(Vec{N+M,UInt8}([Vector{UInt8}(a.v); Vector{UInt8}(b.v)]), a.s + b.s)
 
@@ -133,11 +133,11 @@ function generators{N}(a::Pauli{N})
         if p == 0 # I, skip it
             continue
         elseif p == 1 || p == 2 # X or Z
-            push!(G, expand(Pauli(p), [idx], length(a.v)))
+            push!(G, expand(Pauli(p), [idx], N))
         else # Y
             s *= im
-            push!(G, expand(X, [idx], length(a.v)))
-            push!(G, expand(Z, [idx], length(a.v)))
+            push!(G, expand(X, [idx], N))
+            push!(G, expand(Z, [idx], N))
         end
     end
     G[1] *= s # give phase to first generator
