@@ -7,12 +7,18 @@ export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex
 immutable Pauli{N}
     v::Vec{N,UInt8} # 0 = I, 1 = X, 2 = Z, 3 = Y
     s::UInt8 # 0 = +1, 1 = +i, 2 = -1, 3 = -i (im^s)
+    function Pauli(v, s)
+        new(map(x->mod(x,0x4),v),mod(s,0x4))
+    end
 end
 
-function Pauli{N}(v::Vec{N,UInt8}, s::Integer)
-    @assert 0 <= s <= 3 "The phase of a Pauli must be represented by an interger mod 4"
-    Pauli(v, convert(UInt8,s))
-end
+Pauli{N}(v::Vec{N,UInt8}, s) = Pauli{N}(v,s)
+
+#function Pauli{N}(v::Vec{N,UInt8}, s::Integer)
+#    println("got here")
+#    @assert 0 <= s <= 3 "The phase of a Pauli must be represented by an interger mod 4"
+#    Pauli(v, convert(UInt8,s))
+#end
 Pauli(v::Vector, s = 0) = Pauli{length(v)}(Vec{length(v),UInt8}(v), s)
 Pauli(v::Integer, s = 0) = Pauli([v], s)
 Pauli(m::Matrix) = convert(Pauli, m)
