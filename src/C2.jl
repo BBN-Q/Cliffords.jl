@@ -3,8 +3,8 @@
 import Iterators: product
 
 function fullC2()
-    C2 = Clifford[]
-    C2dict = @compat Dict{Clifford, Int}()
+    C2 = Clifford{2}[]
+    C2dict = @compat Dict{Clifford{2}, Int}()
     iSWAP = CZ*kron(S,S)*SWAP
 
     ct = 1

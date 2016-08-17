@@ -2,10 +2,19 @@
 
 @test Clifford(1/sqrt(2) * [1 1; 1 -1]) == H
 @test Clifford(eye(2)) == RI
-#@test Clifford(eye(4)) == kron(RI,RI)
+@test Clifford(eye(4)) == kron(RI,RI)
 @test Clifford([1 0 0 0; 0 1 0 0; 0 0 0 1; 0 0 1 0]) == CNOT
 @test Clifford(diagm([1,1,1,-1])) == CZ
 @test Clifford(expm(-im*pi/4*[1 0; 0 -1])) == S
+
+function eq_upto_phase(A, B)
+        idx = findfirst(A)
+        rel_phase = (B[idx] == 0) ? 1.0 : (A[idx] / B[idx])
+        return rel_phase * A ≈ B
+end
+@test eq_upto_phase(complex(RI), eye(2))
+@test eq_upto_phase(complex(H), 1/sqrt(2) * [1 1; 1 -1])
+@test eq_upto_phase(complex(CNOT), [1 0 0 0; 0 1 0 0; 0 0 0 1; 0 0 1 0])
 
 # Cliffords * Paulis
 @test H * Id == Id
@@ -13,10 +22,12 @@
 @test H * Z == X
 @test H * Y == -Y
 
-#@test kron(RI, H) * II == II
-#@test kron(RI, H) * IX == IZ
-#@test kron(RI, H) * IZ == IX
-#@test kron(RI, H) * IY == -IY
+II = kron(Id,Id)
+
+@test kron(RI, H) * II == II
+@test kron(RI, H) * IX == IZ
+@test kron(RI, H) * IZ == IX
+@test kron(RI, H) * IY == -IY
 
 @test CNOT * II == II
 @test CNOT * IX == IX
@@ -29,10 +40,12 @@
 @test H \ Z == X
 @test H \ Y == -Y
 
-#@test kron(RI, H) \ II == II
-#@test kron(RI, H) \ IX == IZ
-#@test kron(RI, H) \ IZ == IX
-#@test kron(RI, H) \ IY == -IY
+II = kron(Id,Id)
+
+@test kron(RI, H) \ II == II
+@test kron(RI, H) \ IX == IZ
+@test kron(RI, H) \ IZ == IX
+@test kron(RI, H) \ IY == -IY
 
 @test CNOT \ II == II
 @test CNOT \ IX == IX
@@ -44,8 +57,8 @@
 @test H * S * H == Clifford(@compat(Dict(+X=>+X,+Z=>-Y)),@compat Dict(+X=>+X,+Z=>+Y))
 @test H * S * H == Clifford(expm(-im*pi/4*[0 1; 1 0]))
 @test RY * RX * RY == SelfInverseClifford(@compat Dict(+X=>+X,+Z=>-Z))
-#@test kron(RI, H) * CNOT * kron(RI, H) == SelfInverseClifford(@compat Dict(+IZ=>+IZ,+ZI=>+ZI,+XI=>+XZ,+IX=>+ZX))
-#@test kron(RI, H) * CNOT * kron(RI, H) == CZ
+@test kron(RI, H) * CNOT * kron(RI, H) == SelfInverseClifford(@compat Dict(+IZ=>+IZ,+ZI=>+ZI,+XI=>+XZ,+IX=>+ZX))
+@test kron(RI, H) * CNOT * kron(RI, H) == CZ
 @test S * S == RZ
 
 # 3 CNOTs is a SWAP
