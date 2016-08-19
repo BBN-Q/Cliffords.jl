@@ -14,14 +14,8 @@ end
 
 Pauli{N}(v::Vec{N,UInt8}, s) = Pauli{N}(v,s)
 
-#function Pauli{N}(v::Vec{N,UInt8}, s::Integer)
-#    println("got here")
-#    @assert 0 <= s <= 3 "The phase of a Pauli must be represented by an interger mod 4"
-#    Pauli(v, convert(UInt8,s))
-#end
 Pauli(v::Vector, s = 0) = Pauli{length(v)}(Vec{length(v),UInt8}(v), s)
 Pauli(v::Integer, s = 0) = Pauli([v], s)
-Pauli(m::Matrix) = convert(Pauli, m)
 
 weight{N}(p::Pauli{N}) = sum( p.v .> 0 )
 
@@ -73,7 +67,6 @@ function Pauli(m::Matrix)
         if isapprox(abs(overlap),1,atol=d*eps(Float64))
             return (round(real(overlap))+im*round(imag(overlap)))*p
         elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
-            #println(m, overlap,isapprox(abs(overlap),0))
             error("Trying to convert non-Pauli matrix to a Pauli object")
         end
     end
@@ -87,7 +80,6 @@ function convert{N}(::Type{Pauli{N}}, m::Matrix)
         if isapprox(abs(overlap),1,atol=d*eps(Float64))
             return (round(real(overlap))+im*round(imag(overlap)))*p
         elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
-            #println(m, overlap,isapprox(abs(overlap),0))
             error("Trying to convert non-Pauli matrix to a Pauli object")
         end
     end
