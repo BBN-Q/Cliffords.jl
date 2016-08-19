@@ -13,18 +13,18 @@ immutable Pauli{N}
 end
 
 Pauli{N}(v::Vec{N,UInt8}, s) = Pauli{N}(v,s)
-
 Pauli(v::Vector, s = 0) = Pauli{length(v)}(Vec{length(v),UInt8}(v), s)
 Pauli(v::Integer, s = 0) = Pauli([v], s)
+Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
 
-weight{N}(p::Pauli{N}) = sum( p.v .> 0 )
+weight(p::Pauli) = sum( p.v .> 0 )
 
-show{N}(io::IO, p::Pauli{N}) = print(io,convert(AbstractString,p))
+show(io::IO, p::Pauli) = print(io,convert(AbstractString,p))
 
-=={N,M}(a::Pauli{N}, b::Pauli{M}) = (a.v == b.v && a.s == b.s)
-isequal{N,M}(a::Pauli{N}, b::Pauli{M}) = (a == b)
-hash{N}(a::Pauli{N}, h::UInt) = hash(a.v, hash(a.s, h))
-isid{N}(a::Pauli{N}) = reduce(&,a.v .== 0)
+==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
+isequal(a::Pauli, b::Pauli) = (a == b)
+hash(a::Pauli, h::UInt) = hash(a.v, hash(a.s, h))
+isid(a::Pauli) = reduce(&,a.v .== 0)
 
 function isless(a::Pauli, b::Pauli)
     # canonical total order defined by weight and then "lexicographic":
@@ -47,7 +47,7 @@ function convert(::Type{AbstractString}, p::Pauli)
     phases[p.s+1] * join([paulis[i+1] for i in p.v])
 end
 
-function convert{T,N}(::Type{Matrix{Complex{T}}}, p::Pauli{N})
+function convert{T}(::Type{Matrix{Complex{T}}}, p::Pauli)
     const mats = @compat Dict(
         0x00 => eye(Complex{T},2),
         0x01 => Complex{T}[0 1; 1 0],
@@ -57,20 +57,7 @@ function convert{T,N}(::Type{Matrix{Complex{T}}}, p::Pauli{N})
     return phase(p)*reduce(kron,[mats[x] for x in p.v])
 end
 
-complex{N}(p::Pauli{N}) = convert(Matrix{Complex128},p)
-
-function Pauli(m::Matrix)
-    d = size(m,1)
-    n = log(2,size(m,1))
-    for p in allpaulis(n)
-        overlap = trace(m*convert(typeof(complex(m)),p)) / d
-        if isapprox(abs(overlap),1,atol=d*eps(Float64))
-            return (round(real(overlap))+im*round(imag(overlap)))*p
-        elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
-            error("Trying to convert non-Pauli matrix to a Pauli object")
-        end
-    end
-end
+complex(p::Pauli) = convert(Matrix{Complex128},p)
 
 function convert{N}(::Type{Pauli{N}}, m::Matrix)
     d = size(m,1)
@@ -139,7 +126,7 @@ end
 function generators{N}(a::Pauli{N})
     G = Pauli[]
     if all(map(Bool,a.v .== 0)) # hack because .== in FixedSizeArrays is broken
-        return abs(a) 
+        return abs(a)
     end
     s = phase(a)
     for (idx, p) in enumerate(a.v)

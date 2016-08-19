@@ -1,7 +1,7 @@
 # Copyright 2014: Raytheon BBN Technologies
 # Original authors: Blake Johnson and Marcus da Silva
 
-VERSION >= v"0.4.0-dev+6521" && __precompile__()
+VERSION >= v"0.5-" && __precompile__()
 
 module Cliffords
 
