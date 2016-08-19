@@ -168,4 +168,18 @@ cliffordeye(n) = expand(RI, [1], n)
 
 include("C1.jl")
 
+const p2c = Dict( 0 => localclifford(1),
+                  1 => localclifford(3),
+                  2 => localclifford(9),
+                  3 => localclifford(6))
+
+function convert{N}(::Type{Clifford{N}}, p::Pauli{N})
+    return reduce(kron,map(x->p2c[x],p.v))
+end
+
+function Clifford{N}(p::Pauli{N})
+    convert(Clifford{N},p)
+end
+
+
 end

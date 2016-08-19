@@ -79,3 +79,10 @@ iSWAP = CZ*kron(S,S)*SWAP
 # Local Cliffords
 @test localclifford(1) == RI
 
+# Cliffords -> Pauli
+@test Clifford(Id) == RI
+@test Clifford(X)  == RX
+@test Clifford(Y)  == RY
+@test Clifford(Z)  == RZ
+@test Clifford(XX) == kron(RX,RX)
+@test Clifford(XI) == kron(RX,RI)
