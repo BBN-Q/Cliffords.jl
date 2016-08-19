@@ -17,14 +17,14 @@ Pauli(v::Vector, s = 0) = Pauli{length(v)}(Vec{length(v),UInt8}(v), s)
 Pauli(v::Integer, s = 0) = Pauli([v], s)
 Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
 
-weight{N}(p::Pauli{N}) = sum( p.v .> 0 )
+weight(p::Pauli) = sum( p.v .> 0 )
 
-show{N}(io::IO, p::Pauli{N}) = print(io,convert(AbstractString,p))
+show(io::IO, p::Pauli) = print(io,convert(AbstractString,p))
 
-=={N,M}(a::Pauli{N}, b::Pauli{M}) = (a.v == b.v && a.s == b.s)
-isequal{N,M}(a::Pauli{N}, b::Pauli{M}) = (a == b)
-hash{N}(a::Pauli{N}, h::UInt) = hash(a.v, hash(a.s, h))
-isid{N}(a::Pauli{N}) = reduce(&,a.v .== 0)
+==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
+isequal(a::Pauli, b::Pauli) = (a == b)
+hash(a::Pauli, h::UInt) = hash(a.v, hash(a.s, h))
+isid(a::Pauli) = reduce(&,a.v .== 0)
 
 function isless(a::Pauli, b::Pauli)
     # canonical total order defined by weight and then "lexicographic":
@@ -47,7 +47,7 @@ function convert(::Type{AbstractString}, p::Pauli)
     phases[p.s+1] * join([paulis[i+1] for i in p.v])
 end
 
-function convert{T,N}(::Type{Matrix{Complex{T}}}, p::Pauli{N})
+function convert{T}(::Type{Matrix{Complex{T}}}, p::Pauli)
     const mats = @compat Dict(
         0x00 => eye(Complex{T},2),
         0x01 => Complex{T}[0 1; 1 0],
