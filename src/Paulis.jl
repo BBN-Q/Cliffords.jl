@@ -91,6 +91,7 @@ levicivita(a, b) = mapreduce(levicivita, +, zip(a,b))
 
 # with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the
 # XOR of the bits
+*(a::Pauli{1}, b::Pauli{1}) = Pauli(a.v[1] $ b.v[1], mod(a.s + b.s + levicivita(a.v[1], b.v[1]),4))
 *(a::Pauli, b::Pauli) = Pauli(map($,a.v,b.v), mod(a.s + b.s + levicivita(a.v, b.v),4))
 
 const phases_ = [1, im, -1, -im]
@@ -121,6 +122,16 @@ function expand(a::Pauli, subIndices, n)
         v[i] = a.v[ct]
     end
     Pauli(v, a.s)
+end
+
+function generators(a::Pauli{1})
+    if abs(a) == Y
+        #println(Pauli[im*phase(a)*X,Z])
+        return Pauli[im*phase(a)*X,Z]
+    else
+        #println(Pauli[a])
+        return Pauli[a]
+    end
 end
 
 function generators{N}(a::Pauli{N})
