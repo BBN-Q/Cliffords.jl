@@ -13,15 +13,9 @@ immutable Pauli{N}
 end
 
 Pauli{N}(v::Vec{N,UInt8}, s) = Pauli{N}(v,s)
-
-#function Pauli{N}(v::Vec{N,UInt8}, s::Integer)
-#    println("got here")
-#    @assert 0 <= s <= 3 "The phase of a Pauli must be represented by an interger mod 4"
-#    Pauli(v, convert(UInt8,s))
-#end
 Pauli(v::Vector, s = 0) = Pauli{length(v)}(Vec{length(v),UInt8}(v), s)
 Pauli(v::Integer, s = 0) = Pauli([v], s)
-Pauli(m::Matrix) = convert(Pauli, m)
+Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
 
 weight{N}(p::Pauli{N}) = sum( p.v .> 0 )
 
@@ -63,21 +57,7 @@ function convert{T,N}(::Type{Matrix{Complex{T}}}, p::Pauli{N})
     return phase(p)*reduce(kron,[mats[x] for x in p.v])
 end
 
-complex{N}(p::Pauli{N}) = convert(Matrix{Complex128},p)
-
-function Pauli(m::Matrix)
-    d = size(m,1)
-    n = log(2,size(m,1))
-    for p in allpaulis(n)
-        overlap = trace(m*convert(typeof(complex(m)),p)) / d
-        if isapprox(abs(overlap),1,atol=d*eps(Float64))
-            return (round(real(overlap))+im*round(imag(overlap)))*p
-        elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
-            #println(m, overlap,isapprox(abs(overlap),0))
-            error("Trying to convert non-Pauli matrix to a Pauli object")
-        end
-    end
-end
+complex(p::Pauli) = convert(Matrix{Complex128},p)
 
 function convert{N}(::Type{Pauli{N}}, m::Matrix)
     d = size(m,1)
@@ -147,7 +127,7 @@ end
 function generators{N}(a::Pauli{N})
     G = Pauli[]
     if all(map(Bool,a.v .== 0)) # hack because .== in FixedSizeArrays is broken
-        return abs(a) 
+        return abs(a)
     end
     s = phase(a)
     for (idx, p) in enumerate(a.v)
