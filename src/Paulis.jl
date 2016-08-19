@@ -125,7 +125,7 @@ end
 
 function generators{N}(a::Pauli{N})
     G = Pauli[]
-    if all(map(Bool,a.v .== 0)) # hack because .== in FixedSizeArrays is broken
+    if all(a.v .== 0)
         return abs(a)
     end
     s = phase(a)
