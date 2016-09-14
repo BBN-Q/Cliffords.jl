@@ -6,7 +6,7 @@ const pX = [0 1; 1 0]
 const pY = [0 -im; im 0]
 const pZ = [1 0; 0 -1]
 
-C1 = Dict{UInt,Clifford}()
+C1 = Vector{Clifford}(24)
 
 # identity
 C1[1]  = RI
@@ -42,7 +42,7 @@ C1[24] = expm(-2im*pi/3/sqrt(3) * (-pX+pY+pZ))
 
 rC1 = Dict{Clifford,UInt}()
 
-for (k,v) in C1
+for (k,v) in enumerate(C1)
     rC1[v] = k
 end
 
