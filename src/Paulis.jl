@@ -5,15 +5,15 @@ export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex
 # Paulis's are represented by an immutable vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.
 immutable Pauli{N}
-    v::Vec{N,UInt8} # 0 = I, 1 = X, 2 = Z, 3 = Y
+    v::SVector{N,UInt8} # 0 = I, 1 = X, 2 = Z, 3 = Y
     s::UInt8 # 0 = +1, 1 = +i, 2 = -1, 3 = -i (im^s)
     function Pauli(v, s)
         new(map(x->mod(x,0x4),v),mod(s,0x4))
     end
 end
 
-Pauli{N}(v::Vec{N,UInt8}, s) = Pauli{N}(v,s)
-Pauli(v::Vector, s = 0) = Pauli{length(v)}(Vec{length(v),UInt8}(v), s)
+Pauli{N}(v::SVector{N,UInt8}, s) = Pauli{N}(v,s)
+Pauli(v::Vector, s = 0) = Pauli{length(v)}(SVector{length(v),UInt8}(v), s)
 Pauli(v::Integer, s = 0) = Pauli([v], s)
 Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
 
@@ -114,7 +114,7 @@ phase(p::Pauli) = phases_[p.s+1]
 length{N}(p::Pauli{N}) = N
 vec(p::Pauli) = vec(convert(Matrix{Complex{Int}}, p))
 
-kron{N,M}(a::Pauli{N}, b::Pauli{M}) = Pauli{N+M}(Vec{N+M,UInt8}([Vector{UInt8}(a.v); Vector{UInt8}(b.v)]), a.s + b.s)
+kron{N,M}(a::Pauli{N}, b::Pauli{M}) = Pauli{N+M}(SVector{N+M,UInt8}([Vector{UInt8}(a.v); Vector{UInt8}(b.v)]), a.s + b.s)
 
 function expand(a::Pauli, subIndices, n)
     v = zeros(n)

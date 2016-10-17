@@ -12,7 +12,7 @@ import Iterators: product
 export Clifford, SelfInverseClifford, expand,
        RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
 
-using Compat, FixedSizeArrays
+using Compat, StaticArrays
 
 include("Paulis.jl")
 
