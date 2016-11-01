@@ -167,6 +167,7 @@ zero(::Type{Clifford}) = RI
 cliffordeye(n) = expand(RI, [1], n)
 
 include("C1.jl")
+include("C2.jl")
 
 const p2c = Dict( 0 => localclifford(1),
                   1 => localclifford(3),
