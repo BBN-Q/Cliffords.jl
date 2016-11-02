@@ -173,7 +173,7 @@ function generators{N}(a::Pauli{N})
 end
 
 function paulieye(n)
-    expand(Id, [1], n)
+    expand(Id, 1, n)
 end
 
 # 1-qubit Paulis
