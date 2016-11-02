@@ -1,6 +1,6 @@
 import Base.complex
 
-export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex
+export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex, ∘
 
 # Paulis's are represented by an immutable vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.
@@ -66,7 +66,7 @@ function convert{N}(::Type{Pauli{N}}, m::Matrix)
     for p in allpaulis(n)
         overlap = trace(m*convert(typeof(complex(m)),p)) / d
         if isapprox(abs(overlap),1,atol=d*eps(Float64))
-            return (round(real(overlap))+im*round(imag(overlap)))*p
+            return (round(real(overlap))+im*round(imag(overlap)))∘p
         elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
             error("Trying to convert non-Pauli matrix to a Pauli object")
         end
@@ -97,17 +97,30 @@ levicivita(a, b) = reduce(+, levicivita.(a, b))
 
 const phases_ = [1, im, -1, -im]
 
-function *(n::Number, p::Pauli)
+# special "multiplication" operator that returns a Pauli
+function ∘(n::Number, p::Pauli)
     ns = findfirst(n .== phases_) - 1
     @assert(ns >= 0, "Multiplication only supported for +/- 1, +/- im")
     Pauli(p.v, mod(p.s + ns,4))
 end
+
+# unary operators return Paulis
++(p::Pauli) = p
+-(p::Pauli) = Pauli(p.v, p.s + 0x02)
+
+# standard binary operators are defined to return Matrix
+*(n::Number, p::Pauli) = n * complex(p)
 *(p::Pauli, n::Number) = n * p
 *(p::Pauli, u::Matrix) = *(promote(p, u)...)
 *(u::Matrix, p::Pauli) = *(promote(u, p)...)
 
-+(p::Pauli) = p
--(p::Pauli) = Pauli(p.v, p.s + 0x02)
++(p::Pauli, u::Matrix) = +(promote(p, u)...)
++(u::Matrix, p::Pauli) = +(promote(p, u)...)
++(a::Pauli, b::Pauli) = complex(a) + complex(b)
+
+-(p::Pauli, u::Matrix) = -(promote(p, u)...)
+-(u::Matrix, p::Pauli) = -(promote(p, u)...)
+-(a::Pauli, b::Pauli) = complex(a) - complex(b)
 
 abs(p::Pauli) = Pauli(p.v, 0)
 phase(p::Pauli) = phases_[p.s+1]
@@ -128,7 +141,7 @@ end
 function generators(a::Pauli{1})
     if abs(a) == Y
         #println(Pauli[im*phase(a)*X,Z])
-        return Pauli[im*phase(a)*X,Z]
+        return Pauli[im*phase(a)∘X,Z]
     else
         #println(Pauli[a])
         return Pauli[a]
@@ -152,7 +165,8 @@ function generators{N}(a::Pauli{N})
             push!(G, expand(Z, [idx], N))
         end
     end
-    G[1] *= s # give phase to first generator
+    # give phase to first generator
+    G[1] = s ∘ G[1]
     return G
 end
 

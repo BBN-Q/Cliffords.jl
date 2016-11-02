@@ -8,10 +8,10 @@
 @test Y * Y == Id
 @test Z * Z == Id
 
-@test X * Y == im*Z
-@test Y * Z == im*X
-@test Z * X == im*Y
-@test Y * X == -im*Z
+@test X * Y == im∘Z
+@test Y * Z == im∘X
+@test Z * X == im∘Y
+@test Y * X == -im∘Z
 
 @test Id < X
 @test X < Y
@@ -29,12 +29,12 @@
 # generators
 @test generators(X) == [X]
 @test generators(Z) == [Z]
-@test generators(Y) == [im*X, Z]
+@test generators(Y) == [im∘X, Z]
 
 @test generators(XX) == [XI, IX]
 @test generators(ZZ) == [ZI, IZ]
-@test generators(XY) == [im*XI, IX, IZ]
-@test generators(YX) == [im*XI, ZI, IX]
+@test generators(XY) == [im∘XI, IX, IZ]
+@test generators(YX) == [im∘XI, ZI, IX]
 @test generators(YY) == [-XI, ZI, IX, IZ]
 
 XII = kron(X,Id,Id)
@@ -46,7 +46,7 @@ IIZ = kron(Id,Id,Z)
 
 @test generators(kron(X,X,X)) == [XII, IXI, IIX]
 @test generators(kron(Z,Z,Z)) == [ZII, IZI, IIZ]
-@test generators(kron(X,Y,Z)) == [im*XII, IXI, IZI, IIZ]
+@test generators(kron(X,Y,Z)) == [im∘XII, IXI, IZI, IIZ]
 
 @test Pauli([1 0; 0 1]) == Id
 @test Pauli([0 1; 1 0]) == X
@@ -67,6 +67,6 @@ for i=1:20
 end
 
 #
-@test_approx_eq norm(complex(X)-[0 1; 1 0]) 0
-@test_approx_eq norm(complex(Y)-[0 -1im;1im 0]) 0
-@test_approx_eq norm(complex(Z)-[1 0; 0 -1]) 0
+@test_approx_eq norm(X - [0 1; 1 0]) 0
+@test_approx_eq norm(Y - [0 -1im;1im 0]) 0
+@test_approx_eq norm(Z - [1 0; 0 -1]) 0

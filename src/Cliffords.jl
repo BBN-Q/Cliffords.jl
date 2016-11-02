@@ -116,7 +116,7 @@ function *(c::Clifford, p::Pauli)
     G = generators(p)
     r = paulieye(length(p))
     for g in G
-        r *= phase(g) * c.T[abs(g)]
+        r *= phase(g) ∘ c.T[abs(g)]
     end
     return r
 end
@@ -128,7 +128,7 @@ function \(c::Clifford, p::Pauli)
     G = generators(p)
     r = paulieye(length(p))
     for g in G
-        r *= phase(g) * c.Tinv[abs(g)]
+        r *= phase(g) ∘ c.Tinv[abs(g)]
     end
     return r
 end
