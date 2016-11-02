@@ -13,6 +13,7 @@ immutable Pauli{N}
 end
 
 Pauli{N}(v::SVector{N,UInt8}, s) = Pauli{N}(v,s)
+Pauli{N}(v::MVector{N,UInt8}, s) = Pauli{N}(SVector{N}(v), s)
 Pauli(v::Vector, s = 0) = Pauli{length(v)}(SVector{length(v),UInt8}(v), s)
 Pauli(v::Integer, s = 0) = Pauli([v], s)
 Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
@@ -24,7 +25,7 @@ show(io::IO, p::Pauli) = print(io,convert(AbstractString,p))
 ==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
 isequal(a::Pauli, b::Pauli) = (a == b)
 hash(a::Pauli, h::UInt) = hash(a.v, hash(a.s, h))
-isid(a::Pauli) = reduce(&,a.v .== 0)
+isid(a::Pauli) = all(p == 0 for p in a.v)
 
 function isless(a::Pauli, b::Pauli)
     # canonical total order defined by weight and then "lexicographic":
@@ -85,14 +86,14 @@ function levicivita(a::UInt8, b::UInt8)
         0x00
     end
 end
-levicivita(x::@compat Tuple{UInt8,UInt8}) = levicivita(x...)
-levicivita(a::Vector{UInt8}, b::Vector{UInt8}) = mapreduce(levicivita, +, zip(a,b))
-levicivita(a, b) = mapreduce(levicivita, +, zip(a,b))
+levicivita(a, b) = reduce(+, levicivita.(a, b))
 
 # with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the
 # XOR of the bits
 *(a::Pauli{1}, b::Pauli{1}) = Pauli(a.v[1] $ b.v[1], mod(a.s + b.s + levicivita(a.v[1], b.v[1]),4))
-*(a::Pauli, b::Pauli) = Pauli(map($,a.v,b.v), mod(a.s + b.s + levicivita(a.v, b.v),4))
+*(a::Pauli{2}, b::Pauli{2}) = Pauli{2}(SVector{2,UInt8}(a.v[1] $ b.v[1], a.v[2] $ b.v[2]),
+                                       mod(a.s + b.s + levicivita(a.v, b.v),4))
+*{N}(a::Pauli{N}, b::Pauli{N}) = Pauli{N}(a.v $ b.v, mod(a.s + b.s + levicivita(a.v, b.v),4))
 
 const phases_ = [1, im, -1, -im]
 
@@ -135,10 +136,10 @@ function generators(a::Pauli{1})
 end
 
 function generators{N}(a::Pauli{N})
-    G = Pauli[]
-    if all(a.v .== 0)
+    if isid(a)
         return abs(a)
     end
+    G = Pauli[]
     s = phase(a)
     for (idx, p) in enumerate(a.v)
         if p == 0 # I, skip it
