@@ -128,9 +128,17 @@ vec(p::Pauli) = vec(convert(Matrix{Complex{Int}}, p))
 
 kron{N,M}(a::Pauli{N}, b::Pauli{M}) = Pauli{N+M}(SVector{N+M,UInt8}([Vector{UInt8}(a.v); Vector{UInt8}(b.v)]), a.s + b.s)
 
-function expand(a::Pauli{1}, index, n)
+function expand(a::Pauli{1}, index::Number, n)
     v = zeros(n)
     v[index] = a.v[1]
+    Pauli(v, a.s)
+end
+
+function expand(a::Pauli, subIndices::Vector, n)
+    v = zeros(n)
+    for (ct, i) in enumerate(subIndices)
+        v[i] = a.v[ct]
+    end
     Pauli(v, a.s)
 end
 
