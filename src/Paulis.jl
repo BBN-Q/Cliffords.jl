@@ -96,12 +96,10 @@ levicivita(a, b) = reduce(+, levicivita.(a, b))
 *{N}(a::Pauli{N}, b::Pauli{N}) = Pauli{N}(a.v $ b.v, mod(a.s + b.s + levicivita(a.v, b.v),4))
 
 const phases_ = [1, im, -1, -im]
-
+const phaseDict_ = Dict(1 => 0x0, im => 0x1, -1 => 0x2, -im => 0x3)
 # special "multiplication" operator that returns a Pauli
 function ∘(n::Number, p::Pauli)
-    ns = findfirst(n .== phases_) - 1
-    @assert(ns >= 0, "Multiplication only supported for +/- 1, +/- im")
-    Pauli(p.v, mod(p.s + ns,4))
+    Pauli(p.v, mod(p.s + phaseDict_[n],4))
 end
 
 # unary operators return Paulis
