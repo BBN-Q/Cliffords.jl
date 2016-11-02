@@ -1,10 +1,7 @@
-using Cliffords, Base.Test
+using Cliffords, Base.Test, Compat
 # randomized benchmarking
 
-include("../src/C1.jl")
-include("../src/C2.jl")
-
-C2, C2dict = fullC2()
+C2, C2dict = Cliffords.fullC2()
 
 function rb_seq(n)
 	seqn = rand(1:11520, N)

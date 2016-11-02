@@ -1,7 +1,7 @@
 # Copyright 2014: Raytheon BBN Technologies
 # Original authors: Blake Johnson and Marcus da Silva
 
-VERSION >= v"0.4.0-dev+6521" && __precompile__()
+VERSION >= v"0.5-" && __precompile__()
 
 module Cliffords
 
@@ -12,25 +12,26 @@ import Iterators: product
 export Clifford, SelfInverseClifford, expand,
        RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
 
-using Compat
+using Compat, StaticArrays
 
 include("Paulis.jl")
 
-immutable Clifford
-    T::Dict{Pauli, Pauli}
-    Tinv::Dict{Pauli, Pauli}
+type Clifford{N}
+    T::Dict{Pauli{N}, Pauli{N}}
+    Tinv::Dict{Pauli{N}, Pauli{N}}
 end
 
 SelfInverseClifford(T) = Clifford(T, T)
-length(c::Clifford) = length(first(keys(c.T)))
+length{N}(c::Clifford{N}) = N
 
-==(a::Clifford, b::Clifford) = (a.T == b.T)
-isequal(a::Clifford, b::Clifford) = (a == b) # for backward compatibility with Julia 0.2
-hash(c::Clifford, h::UInt) = hash(c.T, h)
+=={N}(a::Clifford{N}, b::Clifford{N}) = (a.T == b.T)
+isequal{N}(a::Clifford{N}, b::Clifford{N}) = (a == b) # for backward compatibility with Julia 0.2
+hash{N}(c::Clifford{N}, h::UInt) = hash(c.T, h)
 
-function convert(::Type{Clifford},U::Matrix)
-    T = Dict{Pauli,Pauli}()
-    Tinv = Dict{Pauli,Pauli}()
+function convert{N}(::Type{Clifford{N}},U::Matrix)
+    # N = round(Int,log(2,size(U,1)))
+    T = Dict{Pauli{N},Pauli{N}}()
+    Tinv = Dict{Pauli{N},Pauli{N}}()
     t = typeof(complex(U))
     n = round(Int, log(2,size(U,1)))
     ri = cliffordeye(n)
@@ -41,7 +42,10 @@ function convert(::Type{Clifford},U::Matrix)
     Clifford(T, Tinv)
 end
 
-Clifford(U::Matrix) = convert(Clifford,U)
+function Clifford(U::Matrix)
+    N = round(Int64,log(2,size(U,1)))
+    convert(Clifford{N},U)
+end
 
 function convert{T}(::Type{Matrix{T}}, c::Clifford)
     d = 2^length(c)
@@ -80,24 +84,24 @@ const RX = SelfInverseClifford(@compat Dict(Z => -Z, X => X))
 const RY = SelfInverseClifford(@compat Dict(Z => -Z, X => -X))
 const RZ = SelfInverseClifford(@compat Dict(Z => Z, X => -X))
 
-function *(a::Clifford, b::Clifford)
-    T = Dict{Pauli,Pauli}()
+function *{N}(a::Clifford{N}, b::Clifford{N})
+    T = Dict{Pauli{N},Pauli{N}}()
     for p = keys(b.T)
         T[p] = a * (b * p)
     end
-    Tinv = Dict{Pauli,Pauli}()
+    Tinv = Dict{Pauli{N},Pauli{N}}()
     for p = keys(a.Tinv)
         Tinv[p] = b \ (a \ p)
     end
     Clifford(T, Tinv)
 end
 
-function \(a::Clifford, b::Clifford)
-    T = Dict{Pauli,Pauli}()
+function \{N}(a::Clifford{N}, b::Clifford{N})
+    T = Dict{Pauli{N},Pauli{N}}()
     for p = keys(b.T)
         T[p] = a \ (b * p)
     end
-    Tinv = Dict{Pauli,Pauli}()
+    Tinv = Dict{Pauli{N},Pauli{N}}()
     for p = keys(a.Tinv)
         Tinv[p] = b \ (a * p)
     end
@@ -112,7 +116,7 @@ function *(c::Clifford, p::Pauli)
     G = generators(p)
     r = paulieye(length(p))
     for g in G
-        r *= phase(g) * c.T[abs(g)]
+        r *= phase(g) ∘ c.T[abs(g)]
     end
     return r
 end
@@ -124,7 +128,7 @@ function \(c::Clifford, p::Pauli)
     G = generators(p)
     r = paulieye(length(p))
     for g in G
-        r *= phase(g) * c.Tinv[abs(g)]
+        r *= phase(g) ∘ c.Tinv[abs(g)]
     end
     return r
 end
@@ -135,12 +139,12 @@ end
 inv(c::Clifford) = Clifford(c.Tinv, c.T)
 ctranspose(c::Clifford) = inv(c)
 
-function expand(c::Clifford, subIndices, n)
-    T = Dict{Pauli,Pauli}()
+function expand{N}(c::Clifford{N}, subIndices, n)
+    T = Dict{Pauli{n},Pauli{n}}()
     for (k,v) in c.T
         T[expand(k, subIndices, n)] = expand(v, subIndices, n)
     end
-    Tinv = Dict{Pauli, Pauli}()
+    Tinv = Dict{Pauli{n}, Pauli{n}}()
     for (k,v) in c.Tinv
         Tinv[expand(k, subIndices, n)] = expand(v, subIndices, n)
     end
@@ -163,5 +167,20 @@ zero(::Type{Clifford}) = RI
 cliffordeye(n) = expand(RI, [1], n)
 
 include("C1.jl")
+include("C2.jl")
+
+const p2c = Dict( 0 => localclifford(1),
+                  1 => localclifford(3),
+                  2 => localclifford(9),
+                  3 => localclifford(6))
+
+function convert{N}(::Type{Clifford{N}}, p::Pauli{N})
+    return reduce(kron,map(x->p2c[x],p.v))
+end
+
+function Clifford{N}(p::Pauli{N})
+    convert(Clifford{N},p)
+end
+
 
 end

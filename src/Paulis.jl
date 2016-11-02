@@ -1,29 +1,31 @@
 import Base.complex
 
-export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex
+export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex, ∘
 
-# Paulis's are represented by a vector of numbers (0-3) corresponding to
+# Paulis's are represented by an immutable vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.
-immutable Pauli
-    v::Vector{UInt8} # 0 = I, 1 = X, 2 = Z, 3 = Y
+immutable Pauli{N}
+    v::SVector{N,UInt8} # 0 = I, 1 = X, 2 = Z, 3 = Y
     s::UInt8 # 0 = +1, 1 = +i, 2 = -1, 3 = -i (im^s)
-    function Pauli(v::Vector{UInt8}, s::UInt8)
-        new(v,mod(s,4))
+    function Pauli(v, s)
+        new(map(x->mod(x,0x4),v),mod(s,0x4))
     end
 end
 
-Pauli(v::Vector, s = 0) = Pauli(convert(Vector{UInt8}, v), convert(UInt8, s))
-Pauli(v::Integer, s = 0) = Pauli([v], s)
-Pauli(m::Matrix) = convert(Pauli, m)
+Pauli{N}(v::SVector{N,UInt8}, s) = Pauli{N}(v,s)
+Pauli{N}(v::MVector{N,UInt8}, s) = Pauli{N}(SVector{N}(v), s)
+Pauli(v::Integer, s = 0) = Pauli{1}(SVector(v % UInt8), s)
+Pauli(v::Vector, s = 0) = Pauli{length(v)}(SVector{length(v),UInt8}(v), s)
+Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
 
 weight(p::Pauli) = sum( p.v .> 0 )
 
-show(io::IO, p::Pauli) = print(io,convert(String,p))
+show(io::IO, p::Pauli) = print(io,convert(AbstractString,p))
 
 ==(a::Pauli, b::Pauli) = (a.v == b.v && a.s == b.s)
 isequal(a::Pauli, b::Pauli) = (a == b)
 hash(a::Pauli, h::UInt) = hash(a.v, hash(a.s, h))
-isid(a::Pauli) = isempty(find(a.v))
+isid(a::Pauli) = all(p == 0 for p in a.v)
 
 function isless(a::Pauli, b::Pauli)
     # canonical total order defined by weight and then "lexicographic":
@@ -40,7 +42,7 @@ function lex_tuple(p::Pauli)
     tuple([pauli_lex[x+1] for x in p.v]...)
 end
 
-function convert(::Type{String}, p::Pauli)
+function convert(::Type{AbstractString}, p::Pauli)
     phases = ["+","i","-","-i"]
     paulis = "IXZY"
     phases[p.s+1] * join([paulis[i+1] for i in p.v])
@@ -58,22 +60,21 @@ end
 
 complex(p::Pauli) = convert(Matrix{Complex128},p)
 
-function convert(::Type{Pauli}, m::Matrix)
+function convert{N}(::Type{Pauli{N}}, m::Matrix)
     d = size(m,1)
     n = log(2,size(m,1))
     for p in allpaulis(n)
         overlap = trace(m*convert(typeof(complex(m)),p)) / d
         if isapprox(abs(overlap),1,atol=d*eps(Float64))
-            return (round(real(overlap))+im*round(imag(overlap)))*p
+            return (round(real(overlap))+im*round(imag(overlap)))∘p
         elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
-            println(m, overlap,isapprox(abs(overlap),0))
             error("Trying to convert non-Pauli matrix to a Pauli object")
         end
     end
 end
 
-promote_rule{T<:Real}(::Type{Pauli}, ::Type{Matrix{T}}) = Matrix{Complex{T}}
-promote_rule{T<:Complex}(::Type{Pauli}, ::Type{Matrix{T}}) = Matrix{T}
+promote_rule{T<:Real,N}(::Type{Pauli{N}}, ::Type{Matrix{T}}) = Matrix{Complex{T}}
+promote_rule{T<:Complex,N}(::Type{Pauli{N}}, ::Type{Matrix{T}}) = Matrix{T}
 
 function levicivita(a::UInt8, b::UInt8)
     # an unusual Levi-Civita pseudo-tensor for the (1,2,3) = (X,Z,Y) convention
@@ -85,36 +86,55 @@ function levicivita(a::UInt8, b::UInt8)
         0x00
     end
 end
-levicivita(x::@compat Tuple{UInt8,UInt8}) = levicivita(x...)
-levicivita(a::Vector{UInt8}, b::Vector{UInt8}) = mapreduce(levicivita, +, zip(a,b))
+levicivita(a, b) = reduce(+, levicivita.(a, b))
 
 # with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the
 # XOR of the bits
-*(a::Pauli, b::Pauli) = Pauli(a.v $ b.v, a.s + b.s + levicivita(a.v, b.v))
+*(a::Pauli{1}, b::Pauli{1}) = Pauli(a.v[1] $ b.v[1], mod(a.s + b.s + levicivita(a.v[1], b.v[1]),4))
+*(a::Pauli{2}, b::Pauli{2}) = Pauli{2}(SVector{2,UInt8}(a.v[1] $ b.v[1], a.v[2] $ b.v[2]),
+                                       mod(a.s + b.s + levicivita(a.v, b.v),4))
+*{N}(a::Pauli{N}, b::Pauli{N}) = Pauli{N}(a.v $ b.v, mod(a.s + b.s + levicivita(a.v, b.v),4))
 
 const phases_ = [1, im, -1, -im]
-
-function *(n::Number, p::Pauli)
-    ns = findfirst(n .== phases_) - 1
-    @assert(ns >= 0, "Multiplication only supported for +/- 1, +/- im")
-    Pauli(p.v, p.s + ns)
+const phaseDict_ = Dict(1 => 0x0, im => 0x1, -1 => 0x2, -im => 0x3)
+# special "multiplication" operator that returns a Pauli
+function ∘(n::Number, p::Pauli)
+    Pauli(p.v, mod(p.s + phaseDict_[n],4))
 end
+
+# unary operators return Paulis
++(p::Pauli) = p
+-(p::Pauli) = Pauli(p.v, p.s + 0x02)
+
+# standard binary operators are defined to return Matrix
+*(n::Number, p::Pauli) = n * complex(p)
 *(p::Pauli, n::Number) = n * p
 *(p::Pauli, u::Matrix) = *(promote(p, u)...)
 *(u::Matrix, p::Pauli) = *(promote(u, p)...)
 
-+(p::Pauli) = p
--(p::Pauli) = Pauli(p.v, p.s + 2)
++(p::Pauli, u::Matrix) = +(promote(p, u)...)
++(u::Matrix, p::Pauli) = +(promote(p, u)...)
++(a::Pauli, b::Pauli) = complex(a) + complex(b)
+
+-(p::Pauli, u::Matrix) = -(promote(p, u)...)
+-(u::Matrix, p::Pauli) = -(promote(p, u)...)
+-(a::Pauli, b::Pauli) = complex(a) - complex(b)
 
 abs(p::Pauli) = Pauli(p.v, 0)
 phase(p::Pauli) = phases_[p.s+1]
 
-length(p::Pauli) = length(p.v)
+length{N}(p::Pauli{N}) = N
 vec(p::Pauli) = vec(convert(Matrix{Complex{Int}}, p))
 
-kron(a::Pauli, b::Pauli) = Pauli([a.v; b.v], a.s + b.s)
+kron{N,M}(a::Pauli{N}, b::Pauli{M}) = Pauli{N+M}(SVector{N+M,UInt8}([Vector{UInt8}(a.v); Vector{UInt8}(b.v)]), a.s + b.s)
 
-function expand(a::Pauli, subIndices, n)
+function expand(a::Pauli{1}, index::Number, n)
+    v = zeros(n)
+    v[index] = a.v[1]
+    Pauli(v, a.s)
+end
+
+function expand(a::Pauli, subIndices::Vector, n)
     v = zeros(n)
     for (ct, i) in enumerate(subIndices)
         v[i] = a.v[ct]
@@ -122,22 +142,33 @@ function expand(a::Pauli, subIndices, n)
     Pauli(v, a.s)
 end
 
-function generators(a::Pauli)
-    G = Pauli[]
-    all(a.v .== 0) && return abs(a)
+function generators(a::Pauli{1})
+    if abs(a) == Y
+        return Pauli{1}[im*phase(a)∘X,Z]
+    else
+        return Pauli{1}[a]
+    end
+end
+
+function generators{N}(a::Pauli{N})
+    if isid(a)
+        return abs(a)
+    end
+    G = Pauli{N}[]
     s = phase(a)
     for (idx, p) in enumerate(a.v)
         if p == 0 # I, skip it
             continue
         elseif p == 1 || p == 2 # X or Z
-            push!(G, expand(Pauli(p), [idx], length(a.v)))
+            push!(G, expand(Pauli(p), idx, N))
         else # Y
             s *= im
-            push!(G, expand(X, [idx], length(a.v)))
-            push!(G, expand(Z, [idx], length(a.v)))
+            push!(G, expand(X, idx, N))
+            push!(G, expand(Z, idx, N))
         end
     end
-    G[1] *= s # give phase to first generator
+    # give phase to first generator
+    G[1] = s ∘ G[1]
     return G
 end
 
