@@ -14,8 +14,8 @@ end
 
 Pauli{N}(v::SVector{N,UInt8}, s) = Pauli{N}(v,s)
 Pauli{N}(v::MVector{N,UInt8}, s) = Pauli{N}(SVector{N}(v), s)
+Pauli(v::Integer, s = 0) = Pauli{1}(SVector(v % UInt8), s)
 Pauli(v::Vector, s = 0) = Pauli{length(v)}(SVector{length(v),UInt8}(v), s)
-Pauli(v::Integer, s = 0) = Pauli([v], s)
 Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
 
 weight(p::Pauli) = sum( p.v .> 0 )
@@ -128,21 +128,17 @@ vec(p::Pauli) = vec(convert(Matrix{Complex{Int}}, p))
 
 kron{N,M}(a::Pauli{N}, b::Pauli{M}) = Pauli{N+M}(SVector{N+M,UInt8}([Vector{UInt8}(a.v); Vector{UInt8}(b.v)]), a.s + b.s)
 
-function expand(a::Pauli, subIndices, n)
+function expand(a::Pauli{1}, index, n)
     v = zeros(n)
-    for (ct, i) in enumerate(subIndices)
-        v[i] = a.v[ct]
-    end
+    v[index] = a.v[1]
     Pauli(v, a.s)
 end
 
 function generators(a::Pauli{1})
     if abs(a) == Y
-        #println(Pauli[im*phase(a)*X,Z])
-        return Pauli[im*phase(a)∘X,Z]
+        return Pauli{1}[im*phase(a)∘X,Z]
     else
-        #println(Pauli[a])
-        return Pauli[a]
+        return Pauli{1}[a]
     end
 end
 
@@ -150,17 +146,17 @@ function generators{N}(a::Pauli{N})
     if isid(a)
         return abs(a)
     end
-    G = Pauli[]
+    G = Pauli{N}[]
     s = phase(a)
     for (idx, p) in enumerate(a.v)
         if p == 0 # I, skip it
             continue
         elseif p == 1 || p == 2 # X or Z
-            push!(G, expand(Pauli(p), [idx], N))
+            push!(G, expand(Pauli(p), idx, N))
         else # Y
             s *= im
-            push!(G, expand(X, [idx], N))
-            push!(G, expand(Z, [idx], N))
+            push!(G, expand(X, idx, N))
+            push!(G, expand(Z, idx, N))
         end
     end
     # give phase to first generator
