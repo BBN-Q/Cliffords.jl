@@ -90,10 +90,12 @@ levicivita(a, b) = reduce(+, levicivita.(a, b))
 
 # with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the
 # XOR of the bits
-*(a::Pauli{1}, b::Pauli{1}) = Pauli(a.v[1] $ b.v[1], mod(a.s + b.s + levicivita(a.v[1], b.v[1]),4))
+*(a::Pauli{1}, b::Pauli{1}) = Pauli(a.v[1] $ b.v[1],
+                                    mod(a.s + b.s + levicivita(a.v[1], b.v[1]),4))
 *(a::Pauli{2}, b::Pauli{2}) = Pauli{2}(SVector{2,UInt8}(a.v[1] $ b.v[1], a.v[2] $ b.v[2]),
                                        mod(a.s + b.s + levicivita(a.v, b.v),4))
-*{N}(a::Pauli{N}, b::Pauli{N}) = Pauli{N}(a.v $ b.v, mod(a.s + b.s + levicivita(a.v, b.v),4))
+*{N}(a::Pauli{N}, b::Pauli{N}) = Pauli{N}(SVector{N,UInt8}(ntuple(i -> a.v[i] $ b.v[i], N)),
+                                          mod(a.s + b.s + levicivita(a.v, b.v),4))
 
 const phases_ = [1, im, -1, -im]
 const phaseDict_ = Dict(1 => 0x0, im => 0x1, -1 => 0x2, -im => 0x3)
