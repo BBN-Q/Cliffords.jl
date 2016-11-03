@@ -128,6 +128,7 @@ vec(p::Pauli) = vec(convert(Matrix{Complex{Int}}, p))
 
 kron{N,M}(a::Pauli{N}, b::Pauli{M}) = Pauli{N+M}([a.v; b.v], a.s + b.s)
 
+expand(a::Pauli{1}, index::Number, ::Type{Val{1}}) = a
 function expand{N}(a::Pauli{1}, index::Number, ::Type{Val{N}})
     v = SVector{N,UInt8}(ntuple(i -> i == index ? a.v[1] : 0x0, N))
     Pauli(v, a.s)
