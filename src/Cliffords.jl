@@ -150,10 +150,10 @@ function expand{N}(c::Clifford{N}, subIndices, n)
     end
     # add trivial mapping for missing subspaces
     for dim in setdiff(1:n, subIndices)
-        T[expand(X, dim, n)] = expand(X, dim, n)
-        T[expand(Z, dim, n)] = expand(Z, dim, n)
-        Tinv[expand(X, dim, n)] = expand(X, dim, n)
-        Tinv[expand(Z, dim, n)] = expand(Z, dim, n)
+        T[expand(X, dim, Val{n})] = expand(X, dim, Val{n})
+        T[expand(Z, dim, Val{n})] = expand(Z, dim, Val{n})
+        Tinv[expand(X, dim, Val{n})] = expand(X, dim, Val{n})
+        Tinv[expand(Z, dim, Val{n})] = expand(Z, dim, Val{n})
     end
     Clifford(T, Tinv)
 end
