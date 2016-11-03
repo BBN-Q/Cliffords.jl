@@ -65,11 +65,7 @@ complex(c::Clifford) = convert(Matrix{Complex128},c)
 
 function liou(c::Clifford)
     d = 4^length(c)
-    m = zeros(Complex128,d,d)
-    for p in allpaulis(length(c))
-        m += vec(c*p)*vec(p)'/sqrt(d)
-    end
-    m
+    reduce(+, vec(c*p)*vec(p)'/sqrt(d) for p in allpaulis(length(c)))
 end
 
 promote_rule{T}(::Type{Clifford}, ::Type{Matrix{T}}) = Matrix{T}
