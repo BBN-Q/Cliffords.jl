@@ -1,7 +1,7 @@
 # Copyright 2014: Raytheon BBN Technologies
 # Original authors: Blake Johnson and Marcus da Silva
 
-VERSION >= v"0.5-" && __precompile__()
+VERSION >= v"0.5" && __precompile__()
 
 module Cliffords
 
@@ -12,7 +12,7 @@ import Iterators: product
 export Clifford, SelfInverseClifford, expand,
        RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
 
-using Compat, StaticArrays
+using StaticArrays
 
 include("Paulis.jl")
 
@@ -70,15 +70,15 @@ end
 
 promote_rule{T}(::Type{Clifford}, ::Type{Matrix{T}}) = Matrix{T}
 
-const RI = SelfInverseClifford(@compat Dict(Z => Z, X => X))
-const H = SelfInverseClifford(@compat Dict(Z => X, X => Z))
-const S = Clifford(@compat(Dict(Z => Z, X => Y)), @compat Dict(Z => Z, X => -Y))
-const CNOT = SelfInverseClifford(@compat Dict(ZI => ZI, XI => XX, IZ => ZZ, IX => IX))
-const CZ   = SelfInverseClifford(@compat Dict(ZI => ZI, XI => XZ, IZ => IZ, IX => ZX))
-const SWAP = SelfInverseClifford(@compat Dict(ZI => IZ, XI => IX, IZ => ZI, IX => XI))
-const RX = SelfInverseClifford(@compat Dict(Z => -Z, X => X))
-const RY = SelfInverseClifford(@compat Dict(Z => -Z, X => -X))
-const RZ = SelfInverseClifford(@compat Dict(Z => Z, X => -X))
+const RI = SelfInverseClifford(Dict(Z => Z, X => X))
+const H = SelfInverseClifford(Dict(Z => X, X => Z))
+const S = Clifford(Dict(Z => Z, X => Y), Dict(Z => Z, X => -Y))
+const CNOT = SelfInverseClifford(Dict(ZI => ZI, XI => XX, IZ => ZZ, IX => IX))
+const CZ   = SelfInverseClifford(Dict(ZI => ZI, XI => XZ, IZ => IZ, IX => ZX))
+const SWAP = SelfInverseClifford(Dict(ZI => IZ, XI => IX, IZ => ZI, IX => XI))
+const RX = SelfInverseClifford(Dict(Z => -Z, X => X))
+const RY = SelfInverseClifford(Dict(Z => -Z, X => -X))
+const RZ = SelfInverseClifford(Dict(Z => Z, X => -X))
 
 function *{N}(a::Clifford{N}, b::Clifford{N})
     T = Dict{Pauli{N},Pauli{N}}()

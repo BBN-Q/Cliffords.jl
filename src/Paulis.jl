@@ -49,7 +49,7 @@ function convert(::Type{AbstractString}, p::Pauli)
 end
 
 function convert{T}(::Type{Matrix{Complex{T}}}, p::Pauli)
-    const mats = @compat Dict(
+    const mats = Dict(
         0x00 => eye(Complex{T},2),
         0x01 => Complex{T}[0 1; 1 0],
         0x02 => Complex{T}[1 0; 0 -1],
