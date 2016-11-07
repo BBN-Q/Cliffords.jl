@@ -68,7 +68,7 @@ function liou(c::Clifford)
     reduce(+, vec(c*p)*vec(p)'/sqrt(d) for p in allpaulis(length(c)))
 end
 
-promote_rule{T}(::Type{Clifford}, ::Type{Matrix{T}}) = Matrix{T}
+promote_rule{T,N}(::Type{Clifford{N}}, ::Type{Matrix{T}}) = Matrix{T}
 
 const RI = SelfInverseClifford(Dict(Z => Z, X => X))
 const H = SelfInverseClifford(Dict(Z => X, X => Z))

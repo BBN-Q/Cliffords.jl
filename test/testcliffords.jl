@@ -86,3 +86,7 @@ iSWAP = CZ*kron(S,S)*SWAP
 @test Clifford(Z)  == RZ
 @test Clifford(XX) == kron(RX,RX)
 @test Clifford(XI) == kron(RX,RI)
+
+# Clifford and Matrix interaction
+@test typeof(promote(H, eye(2))) == Tuple{Array{Float64,2}, Array{Float64,2}}
+@test typeof(promote(H, eye(Complex128, 2))) == Tuple{Array{Complex128,2}, Array{Complex128,2}}
