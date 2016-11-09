@@ -1,4 +1,4 @@
-using Cliffords, Base.Test, Compat
+using Cliffords, Base.Test
 # randomized benchmarking
 
 C2, C2dict = Cliffords.fullC2()
