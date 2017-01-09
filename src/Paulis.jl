@@ -1,11 +1,13 @@
-import Base: complex, factor, getindex
+import Base: complex, getindex
 
-export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight
+export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex
 
 if VERSION >= v"0.6-"
-  import Base.∘
+    import Base.∘
+    export factor
 else
-  export ∘
+    import Base.factor
+    export ∘
 end
 
 # Paulis's are represented by an immutable vector of numbers (0-3) corresponding to
@@ -40,9 +42,9 @@ Given an `N` qubit Pauli operation `p`, `factor` returns a list of
 single-qubit pauli operations corresponding to the tensor product
 factors.
 
-""" 
-function factor(a::Pauli) 
-    factors = [ Pauli(a.v[i]) for i in 1:length(a) ] 
+"""
+function factor(a::Pauli)
+    factors = [ Pauli(a.v[i]) for i in 1:length(a) ]
     factors[1] = phase(a)∘factors[1]
     return factors
 end
