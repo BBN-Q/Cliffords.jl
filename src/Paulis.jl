@@ -1,6 +1,12 @@
 import Base.complex
 
-export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex, ∘
+export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight
+
+if VERSION >= v"0.6-"
+  import Base.∘
+else
+  export ∘
+end
 
 # Paulis's are represented by an immutable vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.
