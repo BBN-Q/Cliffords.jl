@@ -1,4 +1,4 @@
-import Base: complex, factor
+import Base: complex, factor, getindex
 
 export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex, ∘
 
