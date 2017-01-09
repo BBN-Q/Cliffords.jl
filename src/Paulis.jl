@@ -1,6 +1,6 @@
 import Base: complex, factor
 
-export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex, ∘, factor
+export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex, ∘
 
 # Paulis's are represented by an immutable vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.
@@ -37,8 +37,16 @@ factors.
 """ 
 function factor(a::Pauli) 
     factors = [ Pauli(a.v[i]) for i in 1:length(a) ] 
-    factors[1] = phase(a)*factors[1]
+    factors[1] = phase(a)∘factors[1]
     return factors
+end
+
+function getindex(a::Pauli,i)
+    if i==1
+        return phase(a)∘Pauli(a.v[i])
+    else
+        return Pauli(a.v[i])
+    end
 end
 
 function isless(a::Pauli, b::Pauli)
