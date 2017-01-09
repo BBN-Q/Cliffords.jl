@@ -1,6 +1,6 @@
-import Base.complex
+import Base: complex, factor
 
-export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex, ∘
+export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex, ∘, factor
 
 # Paulis's are represented by an immutable vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.
@@ -26,6 +26,20 @@ show(io::IO, p::Pauli) = print(io,convert(AbstractString,p))
 isequal(a::Pauli, b::Pauli) = (a == b)
 hash(a::Pauli, h::UInt) = hash(a.v, hash(a.s, h))
 isid(a::Pauli) = all(p == 0 for p in a.v)
+
+"""
+factor(p::Pauli)
+
+Given an `N` qubit Pauli operation `p`, `factor` returns a list of
+single-qubit pauli operations corresponding to the tensor product
+factors.
+
+""" 
+function factor(a::Pauli) 
+    factors = [ Pauli(a.v[i]) for i in 1:length(a) ] 
+    factors[1] = phase(a)*factors[1]
+    return factors
+end
 
 function isless(a::Pauli, b::Pauli)
     # canonical total order defined by weight and then "lexicographic":
