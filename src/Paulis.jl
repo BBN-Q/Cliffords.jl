@@ -2,12 +2,16 @@ import Base: complex, getindex
 
 export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex
 
-if VERSION >= v"0.6-"
+# deal with symbols added or removed from Base in Julia 0.5/0.6
+if isdefined(Base, :∘)
     import Base.∘
-    export factor
 else
-    import Base.factor
     export ∘
+end
+if isdefined(Base, :factor)
+    import Base.factor
+else
+    export factor
 end
 
 # Paulis's are represented by an immutable vector of numbers (0-3) corresponding to
