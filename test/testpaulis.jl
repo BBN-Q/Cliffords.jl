@@ -79,6 +79,6 @@ for i=1:20
 end
 
 #
-@test_approx_eq norm(X - [0 1; 1 0]) 0
-@test_approx_eq norm(Y - [0 -1im;1im 0]) 0
-@test_approx_eq norm(Z - [1 0; 0 -1]) 0
+@test norm(X - [0 1; 1 0]) ≈ 0
+@test norm(Y - [0 -1im;1im 0]) ≈ 0
+@test norm(Z - [1 0; 0 -1]) ≈ 0
