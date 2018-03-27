@@ -7,9 +7,7 @@ export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex, ∘
 immutable Pauli{N}
     v::SVector{N,UInt8} # 0 = I, 1 = X, 2 = Z, 3 = Y
     s::UInt8 # 0 = +1, 1 = +i, 2 = -1, 3 = -i (im^s)
-    function Pauli(v, s)
-        new(map(x->mod(x,0x4),v),mod(s,0x4))
-    end
+    Pauli{N}(v, s) where N = new(map(x->mod(x,0x4),v),mod(s,0x4))
 end
 
 Pauli{N}(v::SVector{N,UInt8}, s) = Pauli{N}(v,s)
@@ -92,7 +90,7 @@ levicivita(a, b) = reduce(+, levicivita.(a, b))
 # XOR of the bits
 *(a::Pauli{1}, b::Pauli{1}) = Pauli(a.v[1] $ b.v[1],
                                     mod(a.s + b.s + levicivita(a.v[1], b.v[1]),4))
-*(a::Pauli{2}, b::Pauli{2}) = Pauli{2}(SVector{2,UInt8}(a.v[1] $ b.v[1], a.v[2] $ b.v[2]),
+*(a::Pauli{2}, b::Pauli{2}) = Pauli{2}(SVector{2,UInt8}(a.v[1] ⊻ b.v[1], a.v[2] ⊻ b.v[2]),
                                        mod(a.s + b.s + levicivita(a.v, b.v),4))
 *{N}(a::Pauli{N}, b::Pauli{N}) = Pauli{N}(SVector{N,UInt8}(ntuple(i -> a.v[i] $ b.v[i], N)),
                                           mod(a.s + b.s + levicivita(a.v, b.v),4))
