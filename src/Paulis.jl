@@ -19,9 +19,7 @@ end
 struct Pauli{N}
     v::SVector{N,UInt8} # 0 = I, 1 = X, 2 = Z, 3 = Y
     s::UInt8 # 0 = +1, 1 = +i, 2 = -1, 3 = -i (im^s)
-    function Pauli{N}(v, s) where N
-        new(map(x->mod(x,0x4),v),mod(s,0x4))
-    end
+    Pauli{N}(v, s) where N = new(map(x->mod(x,0x4),v),mod(s,0x4))
 end
 
 Pauli(v::SVector{N,UInt8}, s) where {N} = Pauli{N}(v,s)
