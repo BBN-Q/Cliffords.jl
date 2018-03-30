@@ -1,17 +1,29 @@
-import Base.complex
+import Base: complex, getindex
 
-export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex, ∘
+export Pauli, Id, X, Y, Z, allpaulis, paulieye, weight, complex
+
+# deal with symbols added or removed from Base in Julia 0.5/0.6
+if isdefined(Base, :∘)
+    import Base.∘
+else
+    export ∘
+end
+if isdefined(Base, :factor)
+    import Base.factor
+else
+    export factor
+end
 
 # Paulis's are represented by an immutable vector of numbers (0-3) corresponding to
 # single-qubit Paulis, along with a phase parameter.
-immutable Pauli{N}
+struct Pauli{N}
     v::SVector{N,UInt8} # 0 = I, 1 = X, 2 = Z, 3 = Y
     s::UInt8 # 0 = +1, 1 = +i, 2 = -1, 3 = -i (im^s)
     Pauli{N}(v, s) where N = new(map(x->mod(x,0x4),v),mod(s,0x4))
 end
 
-Pauli{N}(v::SVector{N,UInt8}, s) = Pauli{N}(v,s)
-Pauli{N}(v::MVector{N,UInt8}, s) = Pauli{N}(SVector{N}(v), s)
+Pauli(v::SVector{N,UInt8}, s) where {N} = Pauli{N}(v,s)
+Pauli(v::MVector{N,UInt8}, s) where {N} = Pauli{N}(SVector{N}(v), s)
 Pauli(v::Integer, s = 0) = Pauli{1}(SVector(v % UInt8), s)
 Pauli(v::Vector, s = 0) = Pauli{length(v)}(SVector{length(v),UInt8}(v), s)
 Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
@@ -24,6 +36,28 @@ show(io::IO, p::Pauli) = print(io,convert(AbstractString,p))
 isequal(a::Pauli, b::Pauli) = (a == b)
 hash(a::Pauli, h::UInt) = hash(a.v, hash(a.s, h))
 isid(a::Pauli) = all(p == 0 for p in a.v)
+
+"""
+factor(p::Pauli)
+
+Given an `N` qubit Pauli operation `p`, `factor` returns a list of
+single-qubit pauli operations corresponding to the tensor product
+factors.
+
+"""
+function factor(a::Pauli)
+    factors = [ Pauli(a.v[i]) for i in 1:length(a) ]
+    factors[1] = phase(a)∘factors[1]
+    return factors
+end
+
+function getindex(a::Pauli,i)
+    if i==1
+        return phase(a)∘Pauli(a.v[i])
+    else
+        return Pauli(a.v[i])
+    end
+end
 
 function isless(a::Pauli, b::Pauli)
     # canonical total order defined by weight and then "lexicographic":
@@ -46,7 +80,7 @@ function convert(::Type{AbstractString}, p::Pauli)
     phases[p.s+1] * join([paulis[i+1] for i in p.v])
 end
 
-function convert{T}(::Type{Matrix{Complex{T}}}, p::Pauli)
+function convert(::Type{Matrix{Complex{T}}}, p::Pauli) where T
     const mats = Dict(
         0x00 => eye(Complex{T},2),
         0x01 => Complex{T}[0 1; 1 0],
@@ -58,7 +92,7 @@ end
 
 complex(p::Pauli) = convert(Matrix{Complex128},p)
 
-function convert{N}(::Type{Pauli{N}}, m::Matrix)
+function convert(::Type{Pauli{N}}, m::Matrix) where N
     d = size(m,1)
     n = log(2,size(m,1))
     for p in allpaulis(n)
@@ -71,8 +105,8 @@ function convert{N}(::Type{Pauli{N}}, m::Matrix)
     end
 end
 
-promote_rule{T<:Real,N}(::Type{Pauli{N}}, ::Type{Matrix{T}}) = Matrix{Complex{T}}
-promote_rule{T<:Complex,N}(::Type{Pauli{N}}, ::Type{Matrix{T}}) = Matrix{T}
+promote_rule(::Type{Pauli{N}}, ::Type{Matrix{T}}) where {T<:Real,N} = Matrix{Complex{T}}
+promote_rule(::Type{Pauli{N}}, ::Type{Matrix{T}}) where {T<:Complex,N} = Matrix{T}
 
 function levicivita(a::UInt8, b::UInt8)
     # an unusual Levi-Civita pseudo-tensor for the (1,2,3) = (X,Z,Y) convention
@@ -88,12 +122,12 @@ levicivita(a, b) = reduce(+, levicivita.(a, b))
 
 # with our Pauli representation, multiplication is the sum (mod 4), or equivalently, the
 # XOR of the bits
-*(a::Pauli{1}, b::Pauli{1}) = Pauli(a.v[1] $ b.v[1],
+*(a::Pauli{1}, b::Pauli{1}) = Pauli(a.v[1] ⊻ b.v[1],
                                     mod(a.s + b.s + levicivita(a.v[1], b.v[1]),4))
 *(a::Pauli{2}, b::Pauli{2}) = Pauli{2}(SVector{2,UInt8}(a.v[1] ⊻ b.v[1], a.v[2] ⊻ b.v[2]),
                                        mod(a.s + b.s + levicivita(a.v, b.v),4))
-*{N}(a::Pauli{N}, b::Pauli{N}) = Pauli{N}(SVector{N,UInt8}(ntuple(i -> a.v[i] $ b.v[i], N)),
-                                          mod(a.s + b.s + levicivita(a.v, b.v),4))
+*(a::Pauli{N}, b::Pauli{N}) where {N} = Pauli{N}(SVector{N,UInt8}(ntuple(i -> a.v[i] ⊻ b.v[i], N)),
+                                                 mod(a.s + b.s + levicivita(a.v, b.v),4))
 
 const phases_ = [1, im, -1, -im]
 const phaseDict_ = Dict(1 => 0x0, im => 0x1, -1 => 0x2, -im => 0x3)
@@ -123,13 +157,13 @@ end
 abs(p::Pauli) = Pauli(p.v, 0)
 phase(p::Pauli) = phases_[p.s+1]
 
-length{N}(p::Pauli{N}) = N
+length(p::Pauli{N}) where {N} = N
 vec(p::Pauli) = vec(convert(Matrix{Complex{Int}}, p))
 
-kron{N,M}(a::Pauli{N}, b::Pauli{M}) = Pauli{N+M}([a.v; b.v], a.s + b.s)
+kron(a::Pauli{N}, b::Pauli{M}) where {N,M} = Pauli{N+M}([a.v; b.v], a.s + b.s)
 
 expand(a::Pauli{1}, index::Number, ::Type{Val{1}}) = a
-function expand{N}(a::Pauli{1}, index::Number, ::Type{Val{N}})
+function expand(a::Pauli{1}, index::Number, ::Type{Val{N}}) where N
     v = SVector{N,UInt8}(ntuple(i -> i == index ? a.v[1] : 0x0, N))
     Pauli(v, a.s)
 end
@@ -150,7 +184,7 @@ function generators(a::Pauli{1})
     end
 end
 
-function generators{N}(a::Pauli{N})
+function generators(a::Pauli{N}) where N
     if isid(a)
         return abs(a)
     end

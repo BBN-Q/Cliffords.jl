@@ -55,6 +55,18 @@ IIZ = kron(Id,Id,Z)
 
 @test complex(paulieye(2)) == eye(4)
 
+# Factors
+@test factor(XII)  == [ X,Id,Id]
+@test factor(XII*IZI)  == [ X,Z,Id]
+@test factor(-XII)  == [-X,Id,Id]
+@test factor(-XII*IZI)  == [-X,Z,Id]
+@test factor(-IXI)  == [-Id,X,Id]
+@test factor(-IXI*IIZ)  == [-Id,X,Z]
+@test factor(im∘XII)  == [im∘X,Id,Id]
+@test factor(im∘XII*IZI)  == [im∘X,Z,Id]
+@test factor(im∘IXI)  == [im∘Id,X,Id]
+@test factor(im∘IXI*IIZ)  == [im∘Id,X,Z]
+
 # Weight
 for i=1:20
   v = rand(10)
@@ -67,6 +79,6 @@ for i=1:20
 end
 
 #
-@test_approx_eq norm(X - [0 1; 1 0]) 0
-@test_approx_eq norm(Y - [0 -1im;1im 0]) 0
-@test_approx_eq norm(Z - [1 0; 0 -1]) 0
+@test norm(X - [0 1; 1 0]) ≈ 0
+@test norm(Y - [0 -1im;1im 0]) ≈ 0
+@test norm(Z - [1 0; 0 -1]) ≈ 0

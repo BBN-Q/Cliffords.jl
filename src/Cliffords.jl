@@ -7,7 +7,7 @@ module Cliffords
 
 import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule,
     zero, inv, expand, ==, *, +, -, \, isless, ctranspose
-import Iterators: product
+import IterTools: product
 
 export Clifford, SelfInverseClifford, expand,
        RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
@@ -16,19 +16,19 @@ using StaticArrays
 
 include("Paulis.jl")
 
-type Clifford{N}
+mutable struct Clifford{N}
     T::Dict{Pauli{N}, Pauli{N}}
     Tinv::Dict{Pauli{N}, Pauli{N}}
 end
 
 SelfInverseClifford(T) = Clifford(T, T)
-length{N}(c::Clifford{N}) = N
+length(c::Clifford{N}) where {N} = N
 
-=={N}(a::Clifford{N}, b::Clifford{N}) = (a.T == b.T)
-isequal{N}(a::Clifford{N}, b::Clifford{N}) = (a == b) # for backward compatibility with Julia 0.2
-hash{N}(c::Clifford{N}, h::UInt) = hash(c.T, h)
+==(a::Clifford{N}, b::Clifford{N}) where {N} = (a.T == b.T)
+isequal(a::Clifford{N}, b::Clifford{N}) where {N} = (a == b) # for backward compatibility with Julia 0.2
+hash(c::Clifford{N}, h::UInt) where {N} = hash(c.T, h)
 
-function convert{N}(::Type{Clifford{N}},U::Matrix)
+function convert(::Type{Clifford{N}},U::Matrix) where N
     # N = round(Int,log(2,size(U,1)))
     T = Dict{Pauli{N},Pauli{N}}()
     Tinv = Dict{Pauli{N},Pauli{N}}()
@@ -47,7 +47,7 @@ function Clifford(U::Matrix)
     convert(Clifford{N},U)
 end
 
-function convert{T}(::Type{Matrix{T}}, c::Clifford)
+function convert(::Type{Matrix{T}}, c::Clifford) where T
     d = 2^length(c)
     l = liou(c)
 
@@ -68,7 +68,7 @@ function liou(c::Clifford)
     reduce(+, vec(c*p)*vec(p)'/sqrt(d) for p in allpaulis(length(c)))
 end
 
-promote_rule{T,N}(::Type{Clifford{N}}, ::Type{Matrix{T}}) = Matrix{T}
+promote_rule(::Type{Clifford{N}}, ::Type{Matrix{T}}) where {T,N} = Matrix{T}
 
 const RI = SelfInverseClifford(Dict(Z => Z, X => X))
 const H = SelfInverseClifford(Dict(Z => X, X => Z))
@@ -80,7 +80,7 @@ const RX = SelfInverseClifford(Dict(Z => -Z, X => X))
 const RY = SelfInverseClifford(Dict(Z => -Z, X => -X))
 const RZ = SelfInverseClifford(Dict(Z => Z, X => -X))
 
-function *{N}(a::Clifford{N}, b::Clifford{N})
+function *(a::Clifford{N}, b::Clifford{N}) where N
     T = Dict{Pauli{N},Pauli{N}}()
     for p = keys(b.T)
         T[p] = a * (b * p)
@@ -92,7 +92,7 @@ function *{N}(a::Clifford{N}, b::Clifford{N})
     Clifford(T, Tinv)
 end
 
-function \{N}(a::Clifford{N}, b::Clifford{N})
+function \(a::Clifford{N}, b::Clifford{N}) where N
     T = Dict{Pauli{N},Pauli{N}}()
     for p = keys(b.T)
         T[p] = a \ (b * p)
@@ -135,7 +135,7 @@ end
 inv(c::Clifford) = Clifford(c.Tinv, c.T)
 ctranspose(c::Clifford) = inv(c)
 
-function expand{N}(c::Clifford{N}, subIndices, n)
+function expand(c::Clifford{N}, subIndices, n) where N
     T = Dict{Pauli{n},Pauli{n}}()
     for (k,v) in c.T
         T[expand(k, subIndices, n)] = expand(v, subIndices, n)
@@ -170,11 +170,11 @@ const p2c = Dict( 0 => localclifford(1),
                   2 => localclifford(9),
                   3 => localclifford(6))
 
-function convert{N}(::Type{Clifford{N}}, p::Pauli{N})
+function convert(::Type{Clifford{N}}, p::Pauli{N}) where N
     return reduce(kron,map(x->p2c[x],p.v))
 end
 
-function Clifford{N}(p::Pauli{N})
+function Clifford(p::Pauli{N}) where N
     convert(Clifford{N},p)
 end
 
