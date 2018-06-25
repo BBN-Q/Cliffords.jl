@@ -5,7 +5,7 @@
 @test Clifford(eye(4)) == kron(RI,RI)
 @test Clifford([1 0 0 0; 0 1 0 0; 0 0 0 1; 0 0 1 0]) == CNOT
 @test Clifford(diagm([1,1,1,-1])) == CZ
-@test Clifford(expm(-im*pi/4*[1 0; 0 -1])) == S
+@test Clifford(exp(-im*pi/4*[1 0; 0 -1])) == S
 
 function eq_upto_phase(A, B)
         idx = findfirst(A)
@@ -55,7 +55,7 @@ II = kron(Id,Id)
 # Cliffords * Cliffords
 
 @test H * S * H == Clifford(Dict(+X=>+X,+Z=>-Y),Dict(+X=>+X,+Z=>+Y))
-@test H * S * H == Clifford(expm(-im*pi/4*[0 1; 1 0]))
+@test H * S * H == Clifford(exp(-im*pi/4*[0 1; 1 0]))
 @test RY * RX * RY == SelfInverseClifford(Dict(+X=>+X,+Z=>-Z))
 @test kron(RI, H) * CNOT * kron(RI, H) == SelfInverseClifford(Dict(+IZ=>+IZ,+ZI=>+ZI,+XI=>+XZ,+IX=>+ZX))
 @test kron(RI, H) * CNOT * kron(RI, H) == CZ
@@ -89,4 +89,4 @@ iSWAP = CZ*kron(S,S)*SWAP
 
 # Clifford and Matrix interaction
 @test typeof(promote(H, eye(2))) == Tuple{Array{Float64,2}, Array{Float64,2}}
-@test typeof(promote(H, eye(Complex128, 2))) == Tuple{Array{Complex128,2}, Array{Complex128,2}}
+@test typeof(promote(H, eye(ComplexF64, 2))) == Tuple{Array{ComplexF64,2}, Array{ComplexF64,2}}

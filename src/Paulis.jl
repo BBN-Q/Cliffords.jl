@@ -70,7 +70,7 @@ function isless(a::Pauli, b::Pauli)
 end
 
 function lex_tuple(p::Pauli)
-    const pauli_lex = (1, 2, 4, 3)
+    pauli_lex = (1, 2, 4, 3)
     tuple([pauli_lex[x+1] for x in p.v]...)
 end
 
@@ -81,7 +81,7 @@ function convert(::Type{AbstractString}, p::Pauli)
 end
 
 function convert(::Type{Matrix{Complex{T}}}, p::Pauli) where T
-    const mats = Dict(
+    mats = Dict(
         0x00 => eye(Complex{T},2),
         0x01 => Complex{T}[0 1; 1 0],
         0x02 => Complex{T}[1 0; 0 -1],
@@ -90,7 +90,7 @@ function convert(::Type{Matrix{Complex{T}}}, p::Pauli) where T
     return phase(p)*reduce(kron,[mats[x] for x in p.v])
 end
 
-complex(p::Pauli) = convert(Matrix{Complex128},p)
+complex(p::Pauli) = convert(Matrix{ComplexF64},p)
 
 function convert(::Type{Pauli{N}}, m::Matrix) where N
     d = size(m,1)
@@ -219,7 +219,7 @@ const Z = Pauli(2)
 # 2-qubit Paulis
 labelOpPairs = [("I", Id), ("X", X), ("Y", Y), ("Z", Z)]
 for (a, ao) in labelOpPairs, (b, bo) in labelOpPairs
-    @eval const $(Symbol(a*b)) = kron($ao, $bo)
+    @eval $(Symbol(a*b)) = kron($ao, $bo)
 end
 
 function allpaulis(n)
