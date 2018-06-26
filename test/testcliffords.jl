@@ -22,8 +22,6 @@ end
 @test H * Z == X
 @test H * Y == -Y
 
-II = kron(Id,Id)
-
 @test kron(RI, H) * II == II
 @test kron(RI, H) * IX == IZ
 @test kron(RI, H) * IZ == IX
@@ -39,8 +37,6 @@ II = kron(Id,Id)
 @test H \ X == Z
 @test H \ Z == X
 @test H \ Y == -Y
-
-II = kron(Id,Id)
 
 @test kron(RI, H) \ II == II
 @test kron(RI, H) \ IX == IZ
