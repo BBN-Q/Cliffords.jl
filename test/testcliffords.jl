@@ -8,7 +8,7 @@
 @test Clifford(exp(-im*pi/4*[1 0; 0 -1])) == S
 
 function eq_upto_phase(A, B)
-    idx = findfirst(A)
+    idx = findfirst(x -> x != 0, A)
     rel_phase = (B[idx] == 0) ? 1.0 : (A[idx] / B[idx])
     return rel_phase * A ≈ B
 end
