@@ -11,7 +11,7 @@ import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule,
 export Clifford, SelfInverseClifford, expand,
        RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
 
-using Iterators, LinearAlgebra
+using Base.Iterators, LinearAlgebra
 using StaticArrays
 
 include("Paulis.jl")

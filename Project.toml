@@ -1,9 +1,8 @@
 name = "Cliffords"
 uuid = "276b0191-6968-5de0-98fd-2a81b0f3910d"
-version = "v0.4.0"
 authors = ["Blake Johnson", "Marcus da Silva"]
+version = "v0.4.0"
 
 [deps]
-Iterators = "a4bce56a-f44e-563f-a45f-5312daf41243"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
