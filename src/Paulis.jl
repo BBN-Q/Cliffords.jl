@@ -82,7 +82,7 @@ end
 
 function convert(::Type{Matrix{Complex{T}}}, p::Pauli) where T
     mats = Dict(
-        0x00 => eye(Complex{T},2),
+        0x00 => Complex{T}[1 0; 0 1],
         0x01 => Complex{T}[0 1; 1 0],
         0x02 => Complex{T}[1 0; 0 -1],
         0x03 => Complex{T}[0 -im; im 0])
@@ -96,7 +96,7 @@ function convert(::Type{Pauli{N}}, m::Matrix) where N
     d = size(m,1)
     n = log(2,size(m,1))
     for p in allpaulis(n)
-        overlap = trace(m*convert(typeof(complex(m)),p)) / d
+        overlap = tr(m*convert(typeof(complex(m)),p)) / d
         if isapprox(abs(overlap),1,atol=d*eps(Float64))
             return (round(real(overlap))+im*round(imag(overlap)))∘p
         elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))

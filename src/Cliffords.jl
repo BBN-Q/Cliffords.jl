@@ -6,12 +6,12 @@ __precompile__()
 module Cliffords
 
 import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule,
-    zero, inv, expand, ==, *, +, -, \, isless, ctranspose
-import IterTools: product
+    zero, inv, expand, ==, *, +, -, \, isless, adjoint
 
 export Clifford, SelfInverseClifford, expand,
        RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
 
+using Iterators, LinearAlgebra
 using StaticArrays
 
 include("Paulis.jl")
@@ -37,7 +37,7 @@ function convert(::Type{Clifford{N}},U::Matrix) where N
     ri = cliffordeye(n)
     for p in keys(ri.T)
         T[p] = U * p * U'
-        Tinv[p] = U' * p * U
+        Tinv[p] = U' * (p * U)
     end
     Clifford(T, Tinv)
 end
@@ -133,7 +133,7 @@ end
 *(m::Matrix, c::Clifford) = *(promote(m,c)...)
 
 inv(c::Clifford) = Clifford(c.Tinv, c.T)
-ctranspose(c::Clifford) = inv(c)
+adjoint(c::Clifford) = inv(c)
 
 function expand(c::Clifford{N}, subIndices, n) where N
     T = Dict{Pauli{n},Pauli{n}}()
