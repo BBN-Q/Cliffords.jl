@@ -57,7 +57,7 @@ function convert(::Type{Matrix{T}}, c::Clifford) where T
     choi = reshape(rl, size(l))
 
     # unitary is the reshaped eigenvector corresponding to the non-zero eigenvalue
-    v = eigfact(Hermitian(choi), d^2:d^2)[:vectors]
+    v = eigen(Hermitian(choi), d^2:d^2).vectors
     m = reshape(v, d, d)
     return convert(Matrix{T}, m * sqrt(d))
 end

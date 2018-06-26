@@ -1,4 +1,4 @@
-using Cliffords, Test
+using Cliffords, Test, LinearAlgebra
 
 import Cliffords: IZ, ZI, XI, IX, YI, IY, II, XX, YY, ZZ, XY, XZ, YX, ZX,
         generators

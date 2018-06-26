@@ -4,13 +4,13 @@
 @test Clifford(eye(2)) == RI
 @test Clifford(eye(4)) == kron(RI,RI)
 @test Clifford([1 0 0 0; 0 1 0 0; 0 0 0 1; 0 0 1 0]) == CNOT
-@test Clifford(diagm([1,1,1,-1])) == CZ
+@test Clifford(diagm(0 => [1,1,1,-1])) == CZ
 @test Clifford(exp(-im*pi/4*[1 0; 0 -1])) == S
 
 function eq_upto_phase(A, B)
-        idx = findfirst(A)
-        rel_phase = (B[idx] == 0) ? 1.0 : (A[idx] / B[idx])
-        return rel_phase * A ≈ B
+    idx = findfirst(A)
+    rel_phase = (B[idx] == 0) ? 1.0 : (A[idx] / B[idx])
+    return rel_phase * A ≈ B
 end
 @test eq_upto_phase(complex(RI), eye(2))
 @test eq_upto_phase(complex(H), 1/sqrt(2) * [1 1; 1 -1])
