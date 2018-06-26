@@ -70,15 +70,15 @@ end
 
 promote_rule(::Type{Clifford{N}}, ::Type{Matrix{T}}) where {T,N} = Matrix{T}
 
-RI = SelfInverseClifford(Dict(Z => Z, X => X))
-H = SelfInverseClifford(Dict(Z => X, X => Z))
-S = Clifford(Dict(Z => Z, X => Y), Dict(Z => Z, X => -Y))
+const RI = SelfInverseClifford(Dict(Z => Z, X => X))
+const H = SelfInverseClifford(Dict(Z => X, X => Z))
+const S = Clifford(Dict(Z => Z, X => Y), Dict(Z => Z, X => -Y))
 const CNOT = SelfInverseClifford(Dict(ZI => ZI, XI => XX, IZ => ZZ, IX => IX))
-CZ   = SelfInverseClifford(Dict(ZI => ZI, XI => XZ, IZ => IZ, IX => ZX))
-SWAP = SelfInverseClifford(Dict(ZI => IZ, XI => IX, IZ => ZI, IX => XI))
-RX = SelfInverseClifford(Dict(Z => -Z, X => X))
-RY = SelfInverseClifford(Dict(Z => -Z, X => -X))
-RZ = SelfInverseClifford(Dict(Z => Z, X => -X))
+const CZ   = SelfInverseClifford(Dict(ZI => ZI, XI => XZ, IZ => IZ, IX => ZX))
+const SWAP = SelfInverseClifford(Dict(ZI => IZ, XI => IX, IZ => ZI, IX => XI))
+const RX = SelfInverseClifford(Dict(Z => -Z, X => X))
+const RY = SelfInverseClifford(Dict(Z => -Z, X => -X))
+const RZ = SelfInverseClifford(Dict(Z => Z, X => -X))
 
 function *(a::Clifford{N}, b::Clifford{N}) where N
     T = Dict{Pauli{N},Pauli{N}}()

@@ -219,7 +219,7 @@ const Z = Pauli(2)
 # 2-qubit Paulis
 labelOpPairs = [("I", Id), ("X", X), ("Y", Y), ("Z", Z)]
 for (a, ao) in labelOpPairs, (b, bo) in labelOpPairs
-    @eval $(Symbol(a*b)) = kron($ao, $bo)
+    @eval const $(Symbol(a*b)) = kron($ao, $bo)
 end
 
 function allpaulis(n)
