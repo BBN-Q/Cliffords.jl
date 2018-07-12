@@ -1,17 +1,17 @@
 # Copyright 2014: Raytheon BBN Technologies
 # Original authors: Blake Johnson and Marcus da Silva
 
-VERSION >= v"0.6" && __precompile__()
+__precompile__()
 
 module Cliffords
 
 import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule,
-    zero, inv, expand, ==, *, +, -, \, isless, ctranspose
-import IterTools: product
+    zero, inv, expand, ==, *, +, -, \, isless, adjoint
 
 export Clifford, SelfInverseClifford, expand,
        RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
 
+using Base.Iterators, LinearAlgebra
 using StaticArrays
 
 include("Paulis.jl")
@@ -37,7 +37,7 @@ function convert(::Type{Clifford{N}},U::Matrix) where N
     ri = cliffordeye(n)
     for p in keys(ri.T)
         T[p] = U * p * U'
-        Tinv[p] = U' * p * U
+        Tinv[p] = U' * (p * U)
     end
     Clifford(T, Tinv)
 end
@@ -57,11 +57,11 @@ function convert(::Type{Matrix{T}}, c::Clifford) where T
     choi = reshape(rl, size(l))
 
     # unitary is the reshaped eigenvector corresponding to the non-zero eigenvalue
-    v = eigfact(Hermitian(choi), d^2:d^2)[:vectors]
+    v = eigen(Hermitian(choi), d^2:d^2).vectors
     m = reshape(v, d, d)
     return convert(Matrix{T}, m * sqrt(d))
 end
-complex(c::Clifford) = convert(Matrix{Complex128},c)
+complex(c::Clifford) = convert(Matrix{ComplexF64},c)
 
 function liou(c::Clifford)
     d = 4^length(c)
@@ -133,7 +133,7 @@ end
 *(m::Matrix, c::Clifford) = *(promote(m,c)...)
 
 inv(c::Clifford) = Clifford(c.Tinv, c.T)
-ctranspose(c::Clifford) = inv(c)
+adjoint(c::Clifford) = inv(c)
 
 function expand(c::Clifford{N}, subIndices, n) where N
     T = Dict{Pauli{n},Pauli{n}}()
