@@ -2,7 +2,7 @@
 
 export localclifford
 
-C1 = Vector{Clifford{1}}(24)
+C1 = Vector{Clifford{1}}(undef, 24)
 
 # identity
 C1[1]  = RI
