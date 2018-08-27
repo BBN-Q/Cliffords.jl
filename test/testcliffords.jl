@@ -58,7 +58,7 @@ end
 @test S * S == RZ
 
 # 3 CNOTs is a SWAP
-CNOT21 = expand(CNOT, [2,1], 2)
+CNOT21 = Cliffords.expand(CNOT, [2,1], 2)
 @test CNOT * CNOT21 * CNOT == SWAP
 
 # iSWAP
