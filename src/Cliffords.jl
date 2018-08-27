@@ -6,7 +6,7 @@ __precompile__()
 module Cliffords
 
 import Base: convert, show, kron, abs, length, hash, isequal, vec, promote_rule,
-    zero, inv, expand, ==, *, +, -, \, isless, adjoint
+    zero, inv, ==, *, +, -, \, isless, adjoint
 
 export Clifford, SelfInverseClifford, expand,
        RI, RX, RY, RZ, H, S, CNOT, CZ, SWAP, cliffordeye
