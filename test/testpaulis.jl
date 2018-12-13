@@ -78,7 +78,12 @@ for i=1:20
   @test weight(Pauli(vX + vY + vZ,rS)) == sum(v .> .25)
 end
 
-#
-@test norm(X - [0 1; 1 0]) ≈ 0
-@test norm(Y - [0 -1im;1im 0]) ≈ 0
-@test norm(Z - [1 0; 0 -1]) ≈ 0
+# Matrix conversions
+@test complex(X) ≈ [0 1; 1 0]
+@test complex(Y) ≈ [0 -1im; 1im 0]
+@test complex(Z) ≈ [1 0; 0 -1]
+
+# Matrix arthimetic
+@test norm(X - [0 1; 1 0]) == 0
+@test norm(Y - [0 -1im;1im 0]) == 0
+@test norm(Z - [1 0; 0 -1]) == 0
