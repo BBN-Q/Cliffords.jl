@@ -79,11 +79,11 @@ for i=1:20
 end
 
 # Matrix conversions
-@test complex(X) ≈ [0 1; 1 0]
-@test complex(Y) ≈ [0 -1im; 1im 0]
-@test complex(Z) ≈ [1 0; 0 -1]
+@test complex(X) == [0 1; 1 0]
+@test complex(Y) == [0 -1im; 1im 0]
+@test complex(Z) == [1 0; 0 -1]
 
 # Matrix arthimetic
-@test norm(X - [0 1; 1 0]) == 0
-@test norm(Y - [0 -1im;1im 0]) == 0
-@test norm(Z - [1 0; 0 -1]) == 0
+@test iszero(X - [0 1; 1 0])
+@test iszero(Y - [0 -1im;1im 0])
+@test iszero(Z - [1 0; 0 -1])
