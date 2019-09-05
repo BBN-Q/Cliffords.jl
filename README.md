@@ -31,12 +31,3 @@ H * Z => X
 CNOT21 = expand(CNOT, [2,1], 2)
 CNOT * CNOT21 * CNOT == SWAP => true
 ```
-
-## Installation 
-For Julia v0.6 run:
-
-```julia> Pkg.add("Cliffords")```
-
-For v0.7 and above, run the following in the package manager to grab the master branch:
-
-```(v1.1) pkg> add Cliffords#master```
