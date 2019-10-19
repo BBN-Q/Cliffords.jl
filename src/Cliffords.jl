@@ -14,7 +14,7 @@ using StaticArrays
 
 include("Paulis.jl")
 
-mutable struct Clifford{N}
+struct Clifford{N}
     T::Dict{Pauli{N}, Pauli{N}}
     Tinv::Dict{Pauli{N}, Pauli{N}}
 end
