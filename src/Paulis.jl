@@ -96,7 +96,7 @@ function convert(::Type{Pauli{N}}, m::Matrix) where N
     d = size(m,1)
     n = log(2,size(m,1))
     for p in allpaulis(n)
-        overlap = tr(m*convert(typeof(complex(m)),p)) / d
+        overlap = tr(m*p) / d
         if isapprox(abs(overlap),1,atol=d*eps(Float64))
             return (round(real(overlap))+im*round(imag(overlap)))∘p
         elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
