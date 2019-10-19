@@ -28,7 +28,7 @@ Pauli(v::Integer, s = 0) = Pauli{1}(SVector(v % UInt8), s)
 Pauli(v::Vector, s = 0) = Pauli{length(v)}(SVector{length(v),UInt8}(v), s)
 Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
 
-weight(p::Pauli) = sum( p.v .> 0 )
+weight(p::Pauli) = Int(sum( p.v .> 0 ))
 
 show(io::IO, p::Pauli) = print(io,convert(AbstractString,p))
 

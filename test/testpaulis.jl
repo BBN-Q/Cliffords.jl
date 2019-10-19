@@ -87,3 +87,8 @@ end
 @test iszero(X - [0 1; 1 0])
 @test iszero(Y - [0 -1im;1im 0])
 @test iszero(Z - [1 0; 0 -1])
+
+# weight returns Int
+@test isa(weight(Pauli(1)), Int)
+
+
