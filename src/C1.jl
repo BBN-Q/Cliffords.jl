@@ -36,7 +36,7 @@ C1[22] = exp(-2im*pi/3/sqrt(3) * (X+Y-Z))
 C1[23] = exp(-1im*pi/3/sqrt(3) * (-X+Y+Z))
 C1[24] = exp(-2im*pi/3/sqrt(3) * (-X+Y+Z))
 
-rC1 = Dict{Clifford{1},UInt}()
+const rC1 = Dict{Clifford{1},UInt}()
 
 for (idx,v) in enumerate(C1)
     rC1[v] = idx
