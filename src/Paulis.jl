@@ -26,7 +26,20 @@ Pauli(v::SVector{N,UInt8}, s) where {N} = Pauli{N}(v,s)
 Pauli(v::MVector{N,UInt8}, s) where {N} = Pauli{N}(SVector{N}(v), s)
 Pauli(v::Integer, s = 0) = Pauli{1}(SVector(v % UInt8), s)
 Pauli(v::Vector, s = 0) = Pauli{length(v)}(SVector{length(v),UInt8}(v), s)
-Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
+#Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
+
+function Pauli(m::AbstractMatrix; tolfac=eps(Float64))
+    d = size(m,1)
+    n = log(2,size(m,1))
+    for p in allpaulis(n)
+        overlap = tr(m*p) / d
+        if isapprox(abs(overlap),1,atol = tolfac * d)
+            return (round(real(overlap))+im*round(imag(overlap)))∘p
+        elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
+            error("Trying to convert non-Pauli matrix to a Pauli object")
+        end
+    end
+end
 
 weight(p::Pauli) = Int(sum( p.v .> 0 ))
 
@@ -93,16 +106,7 @@ end
 complex(p::Pauli) = convert(Matrix{ComplexF64},p)
 
 function convert(::Type{Pauli{N}}, m::Matrix) where N
-    d = size(m,1)
-    n = log(2,size(m,1))
-    for p in allpaulis(n)
-        overlap = tr(m*p) / d
-        if isapprox(abs(overlap),1,atol=d*eps(Float64))
-            return (round(real(overlap))+im*round(imag(overlap)))∘p
-        elseif !isapprox(abs(overlap),0,atol=d*eps(Float64))
-            error("Trying to convert non-Pauli matrix to a Pauli object")
-        end
-    end
+    return Pauli(m)
 end
 
 promote_rule(::Type{Pauli{N}}, ::Type{Matrix{T}}) where {T<:Real,N} = Matrix{Complex{T}}
