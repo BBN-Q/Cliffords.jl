@@ -28,7 +28,7 @@ Pauli(v::Integer, s = 0) = Pauli{1}(SVector(v % UInt8), s)
 Pauli(v::Vector, s = 0) = Pauli{length(v)}(SVector{length(v),UInt8}(v), s)
 #Pauli(m::Matrix) = convert(Pauli{isqrt(size(m,1))}, m)
 
-function Pauli(m::AbstractMatrix; tolfac=eps(Float64))
+function PauliB(m::AbstractMatrix; tolfac=eps(Float64))
     d = size(m,1)
     n = log(2,size(m,1))
     for p in allpaulis(n)
@@ -39,6 +39,17 @@ function Pauli(m::AbstractMatrix; tolfac=eps(Float64))
             error("Trying to convert non-Pauli matrix to a Pauli object")
         end
     end
+end
+
+function Pauli(m::AbstractMatrix)
+    d = size(m,1)
+    n = log(2,size(m,1))
+    paulis = allpaulis(n)
+    overlaps = [tr(m*p) / d for p in paulis]
+    absoverlaps = [abs2(overlap) for overlap in overlaps]
+    (_, index) = findmax(absoverlaps)
+    phase_index = round(real(overlaps[index]))+im*round(imag(overlaps[index]))
+    return phase_index ∘ paulis[index]
 end
 
 weight(p::Pauli) = Int(sum( p.v .> 0 ))
