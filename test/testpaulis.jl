@@ -91,4 +91,10 @@ end
 # weight returns Int
 @test isa(weight(Pauli(1)), Int)
 
+@testset "Construct from matrix" begin
+    xmat = Complex{Float64}[4.702883518586134e-7 + 0.0im 0.9999991609182552 + 0.0im; 0.9999990516115099 + 0.0im 5.793263216649176e-7 + 0.0im]
+    @test Pauli(xmat) == X
+    ymat = -im * Complex{Float64}[7.6121754928998e-7 + 0.0im 5.577787991615943e-7 - 0.9999984033382637im; 2.066866029117562e-7 + 0.9999984033382637im 8.745277847991395e-8 + 0.0im]
+    @test Pauli(ymat) == -im ∘ Y
+end
 
